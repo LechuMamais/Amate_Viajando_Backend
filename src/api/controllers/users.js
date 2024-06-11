@@ -40,8 +40,8 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
     try {
-        const { userName, password } = req.body;
-        const user = await User.findOne({ userName });
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
@@ -63,11 +63,9 @@ const updateUser = async (req, res, next) => {
         }
         const newUser = new User(req.body);
         newUser._id = id;
-        // Para que al modificar algun dato del usuario no se pierda su array de eventos favoritos, vamos a defirle que su
-        // array de favoritos sea el del anterior mas los nuevos.
         const oldUser = await User.findById(id);
-        newUser.eventsAsAttendee = [...oldUser.eventsAsAttendee, newUser.eventsAsAttendee];
-        newUser.eventsAsOrganizer = [...oldUser.eventsAsOrganizer, newUser.eventsAsOrganizer];
+        newUser.favouriteTours = [...oldUser.favouriteTours, newUser.favouriteTours];
+        newUser.shoppingCart = [...oldUser.shoppingCart, newUser.shoppingCart];
         const userUpdated = await User.findByIdAndUpdate(id, newUser, { new: true });
 
         return res.status(200).json(userUpdated);

@@ -6,7 +6,7 @@ const destinationsSchema = new mongoose.Schema({
     description: {type: String, required: true},
     longDescription: {type: String, required: true},
     images: [{type: mongoose.Types.ObjectId, required: true, default: {}, ref: "images"}],
-    tours: [{type: mongoose.Types.ObjectId, required: false, default: {}, ref: "tours"}],    
+    tours: [{type: mongoose.Types.ObjectId, required: true, default: {}, ref: "tours"}],    
 },{
     timestamps:true,
     collectionName: "destinations"

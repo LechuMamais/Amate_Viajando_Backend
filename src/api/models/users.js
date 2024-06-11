@@ -2,17 +2,15 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
-    userName: {type: String, required: true},
-    email: {type: String, required: true},
-    password: {type: String, required: true},
-    role: {type: String, enum: ["admin", "organizer", "user"], default: "user", required: true},
-    eventsAsAttendee: [
-        {type: mongoose.Types.ObjectId, required: false, ref: "events"}
-    ],
-    eventsAsOrganizer: [
-        {type: mongoose.Types.ObjectId, required: false, ref: "events"}
-    ]
-},{
+    userName: { type: String, required: true },
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ["admin", "user"], default: "user", required: true },
+    favouriteTours:
+        [{ type: mongoose.Types.ObjectId, required: true, default: {}, ref: "tours" }],
+    shoppingCart:
+        [{ type: mongoose.Types.ObjectId, required: true, default: {}, ref: "tours" }]
+}, {
     timestamps: true,
     collectionName: "users"
 });
