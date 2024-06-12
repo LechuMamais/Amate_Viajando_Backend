@@ -7,8 +7,7 @@ const bcrypt = require('bcrypt');
 
 const getUsers = async (req, res, next) => {
     try {
-        const users = await User.find().populate("eventsAsOrganizer").populate("eventsAsAttendee");
-        // Con POPULATE lo que hacemos es que al devolver los usuarios, también arroje toda la información de los eventos AsAttendee y AsOrganizer
+        const users = await User.find();
         res.status(200).json(users);
     } catch (error) {
         return (res.status(404).json(error));
@@ -17,7 +16,7 @@ const getUsers = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
     try {
-        const user = await User.findById(req.params.id).populate("eventsAsAttendee").populate("eventsAsOrganizer");
+        const user = await User.findById(req.params.id)
         res.status(200).json(user);
     } catch (error) {
         return (res.status(404).json(error));
@@ -85,29 +84,31 @@ const deleteUser = async (req, res, next) => {
     }
 };
 
-
-//  ----------------------------------------    MANEJAR ASISTENCIA    ----------------------------------------  //
-
-// Controlador para inscribir un usuario a un evento
-const addAssistantToUserEventsAsAttendee = async (req, res, next) =>{
+const addTourToCart = async (req, res, next) => {
     try {
-        const { userId, eventId } = req.params;
-        const assistant = await User.findByIdAndUpdate(userId, { $push: { eventsAsAttendee: eventId } });
-        return res.status(200).json(assistant);
+        const { user_id, tour_id } = req.params;
+        const user = await User.findById(user_id);
+        user.shoppingCart = [...user.shoppingCart, tour_id];
+        const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
+        return res.status(200).json(userUpdated);
+        
     } catch (error) {
         return (res.status(404).json(error));
     }
 }
 
-// Controlador para cancelar asistencia a un evento
-const removeAssistantToUserEventsAsAttendee = async (req, res, next) =>{
+const addTourToFavorites = async (req, res, next) => {
     try {
-        const { userId, eventId } = req.params;
-        const assistant = await User.findByIdAndUpdate(userId, { $pull: { eventsAsAttendee: eventId } });
-        return res.status(200).json(assistant);
+        const { user_id, tour_id } = req.params;
+        const user = await User.findById(user_id);
+        user.favouriteTours = [...user.favouriteTours, tour_id];
+        const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
+        return res.status(200).json(userUpdated);
+        
     } catch (error) {
         return (res.status(404).json(error));
     }
 }
 
-module.exports = { getUsers, getUserById, updateUser, register, deleteUser, login, addAssistantToUserEventsAsAttendee, removeAssistantToUserEventsAsAttendee };
+
+module.exports = { getUsers, getUserById, updateUser, register, deleteUser, login, addTourToCart, addTourToFavorites };
