@@ -15,7 +15,7 @@ const isAuth = async (req,res, next) =>{
         req.userName = user.userName;    // le pasamos el userName que corresponde con el id
         req.id = user._id;    // le pasamos el id que corresponde con el id*/
         req.user = user;
-        req.password = null
+        user.password = null
 
         console.log("Autenticación correcta");
         next();

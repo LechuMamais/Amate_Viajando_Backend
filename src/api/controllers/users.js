@@ -30,6 +30,7 @@ const register = async (req, res, next) => {
         if (userDuplicated) {
             return res.status(400).json({ message: "User already exists" });
         }
+        newUser.role= "user";
         const user = await newUser.save();
         res.status(201).json(user);
     } catch (error) {

@@ -1,4 +1,4 @@
-const { isAuth } = require("../../middlewares/auth");
+const { isAuth } = require("../../middlewares/isAuth");
 
 const { getUsers, getUserById, register, login, updateUser, deleteUser, addTourToCart, addTourToFavorites } = require("../controllers/users");
 
