@@ -8,14 +8,9 @@ const isAuth = async (req,res, next) =>{
 
         const {id} = verifyKey(parsedToken);
         const user = await User.findById(id);
-        
 
-        //Antes de abrir la puerta, la modificamos a la req algunas cositas
-        /*req.password = null;    // Le borramos las password para que no se vea
-        req.userName = user.userName;    // le pasamos el userName que corresponde con el id
-        req.id = user._id;    // le pasamos el id que corresponde con el id*/
-        req.user = user;
         user.password = null
+        req.user = user;
 
         console.log("Autenticación correcta");
         next();
