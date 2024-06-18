@@ -5,7 +5,12 @@ const toursSchema = new mongoose.Schema({
     heading: {type: String, required: true},
     description: {type: String, required: true},
     longDescription: {type: String, required: true},
-    images: [{type: mongoose.Types.ObjectId, ref: "images"}], // Cambiado a un array de ObjectId
+    images: [
+        {
+            order: { type: Number, required: true },
+            imgObj: { type: mongoose.Types.ObjectId, required: true, ref: "images" }
+        }
+    ],
 }, {
     timestamps: true,
     collectionName: "tours"

@@ -1,4 +1,4 @@
-const { isAuth } = require("../../middlewares/isAuth");
+//const { isAuth } = require("../../middlewares/isAuth");
 const { isAuthAdmin } = require("../../middlewares/isAuthAdmin");
 const { createDestination, getDestinationById, getDestinations, updateDestination, deleteDestination } = require("../controllers/destinations");
 

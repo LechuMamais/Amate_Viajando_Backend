@@ -2,7 +2,10 @@ const Tours = require("../models/tours");
 
 const getTours = async (req, res, next) => {
     try {
-        const tours = await Tours.find().populate('images');
+        const tours = await Tours.find().populate('images.imgObj');
+        tours.forEach(tour =>{
+            tour.images.sort((a,b) =>{a.order - b.order});
+        })
         res.status(200).json(tours)
     } catch (error) {
         return (res.status(404).json(error));
@@ -11,7 +14,10 @@ const getTours = async (req, res, next) => {
 
 const getTourById = async (req, res, next) => {
     try {
-        const tour = await Tours.findById(req.params.id).populate('images');
+        const tour = await Tours.findById(req.params.id).populate('images.imgObj');
+        if(tour){
+            tour.images.sort((a,b) =>{a.order - b.order});
+        }
         res.status(200).json(tour);
     } catch (error) {
         return (res.status(404).json(error));
