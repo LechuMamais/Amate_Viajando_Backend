@@ -64,20 +64,19 @@ const updateTour = async (req, res) => {
 
 const deleteImageFromTour = async (req, res, next) => {
     const {tour_id, image_id} = req.params;
-    console.log(tour_id, image_id);
     try {
         const tour = await Tours.findById(tour_id);
         if (!tour) {
             return res.status(404).json({ message: "Tour no encontrado" });
         }
-        console.log(tour)
+
         let newImagesArray = [];
         tour.images.forEach(image=>{
             if(image.imgObj != image_id){
                 newImagesArray.push(image)
             }
         })
-        console.log(newImagesArray)
+
         tour.images = [];
         tour.images = newImagesArray;
 
