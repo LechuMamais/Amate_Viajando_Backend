@@ -13,14 +13,6 @@ const getDestinations = async (req, res, next) => {
                 }
             });
 
-        destinations.forEach(destination => {
-            destination.images?.sort((a, b) => a.order - b.order);
-            destination.tours?.sort((a, b) => a.order - b.order);
-            destination.tours?.forEach(tour => {
-                tour.tourObj.images?.sort((a, b) => a.order - b.order);
-            });
-        });
-
         res.status(200).json(destinations);
     } catch (error) {
         return res.status(404).json(error);
@@ -41,17 +33,6 @@ const getDestinationById = async (req, res, next) => {
         if (!destination) {
             return res.status(404).json({ message: 'Destination not found' });
         }
-
-        // Ordenar las imágenes del destino
-        destination.images.sort((a, b) => a.order - b.order);
-
-        // Ordenar los tours del destino y las imágenes de cada tour
-        destination.tours.sort((a, b) => a.order - b.order);
-        destination.tours.forEach(tour => {
-            if (tour.tourObj && tour.tourObj.images) {
-                tour.tourObj.images.sort((a, b) => a.order - b.order);
-            }
-        });
 
         res.status(200).json(destination);
     } catch (error) {
