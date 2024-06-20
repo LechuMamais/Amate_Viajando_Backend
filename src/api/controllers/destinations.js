@@ -91,7 +91,7 @@ const updateDestination = async (req, res, next) => {
 const deleteImageFromDestination = async (req, res, next) => {
     const {destination_id, image_id} = req.params;
     try {
-        const destination = await Tours.findById(destination_id);
+        const destination = await Destinations.findById(destination_id);
         if (!destination) {
             return res.status(404).json({ message: "Destination no encontrado" });
         }
@@ -106,7 +106,7 @@ const deleteImageFromDestination = async (req, res, next) => {
         destination.images = [];
         destination.images = newImagesArray;
 
-        const updatedDestination = await Tours.findByIdAndUpdate(destination_id, destination, {new: true})
+        const updatedDestination = await Destinations.findByIdAndUpdate(destination_id, destination, {new: true})
         res.status(200).json(updatedDestination);
     } catch(error){
         res.status(500).json({ message: "Error al actualizar el Destination", error });
