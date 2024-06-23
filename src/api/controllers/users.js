@@ -25,12 +25,15 @@ const getUserById = async (req, res, next) => {
 
 const register = async (req, res, next) => {
     try {
+        console.log(req.body)
         const newUser = new User(req.body);
-        const userDuplicated = await User.findOne({ userName: req.body.userName });
-        if (userDuplicated) {
-            return res.status(400).json({ message: "User already exists" });
+
+        const userEmailDuplicated = await User.findOne({ email: req.body.email });
+        if (userEmailDuplicated) {
+            return res.status(400).json({ message: "There is already a user with this email", userDuplicated: 'true', email: req.body.email });
         }
-        newUser.role= "user";
+
+        newUser.role = "user";
         const user = await newUser.save();
         res.status(201).json(user);
     } catch (error) {
@@ -92,7 +95,7 @@ const addTourToCart = async (req, res, next) => {
         user.shoppingCart = [...user.shoppingCart, tour_id];
         const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
         return res.status(200).json(userUpdated);
-        
+
     } catch (error) {
         return (res.status(404).json(error));
     }
@@ -105,7 +108,7 @@ const addTourToFavorites = async (req, res, next) => {
         user.favouriteTours = [...user.favouriteTours, tour_id];
         const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
         return res.status(200).json(userUpdated);
-        
+
     } catch (error) {
         return (res.status(404).json(error));
     }
