@@ -1,12 +1,13 @@
 const { isAuth } = require("../../middlewares/isAuth");
 
-const { getUsers, getUserById, register, login, updateUser, deleteUser, addTourToCart, addTourToFavorites } = require("../controllers/users");
+const { getUsers, getUserById, register, login, updateUser, deleteUser, addTourToCart, addTourToFavorites, verifyEmail } = require("../controllers/users");
 
 const usersRouter = require("express").Router();
 
 usersRouter.get("/", getUsers);
 usersRouter.get("/:id", getUserById);
 usersRouter.post("/register", register);
+usersRouter.post("/verify-email", verifyEmail);
 usersRouter.post("/login", login);
 usersRouter.put("/:id", [isAuth], updateUser);
 usersRouter.delete("/:id", [isAuth], deleteUser);

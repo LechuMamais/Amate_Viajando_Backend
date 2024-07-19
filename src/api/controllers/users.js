@@ -1,3 +1,5 @@
+const sendVerificationEmail = require("../../config/mailer");
+const generateNumericToken = require("../../utils/generateNumericToken");
 const { generateKey } = require("../../utils/jwt");
 const User = require("../models/users");
 const bcrypt = require('bcrypt');
@@ -25,21 +27,48 @@ const getUserById = async (req, res, next) => {
 
 const register = async (req, res, next) => {
     try {
-        console.log(req.body)
-        const newUser = new User(req.body);
-
         const userEmailDuplicated = await User.findOne({ email: req.body.email });
         if (userEmailDuplicated) {
             return res.status(400).json({ message: "There is already a user with this email", userDuplicated: 'true', email: req.body.email });
         }
 
-        newUser.role = "user";
+        const verificationToken = generateNumericToken();
+        const hashedToken = bcrypt.hashSync(verificationToken, bcrypt.genSaltSync(10));
+
+        const newUser = new User({ ...req.body, verificationToken: hashedToken, isVerified: false, role: 'user' });
         const user = await newUser.save();
-        res.status(201).json(user);
+
+        await sendVerificationEmail(req.body.email, verificationToken);
+
+        res.status(200).json({ user, message: 'Usuario registrado. Verifica tu correo electrónico.' });
     } catch (error) {
-        return (res.status(404).json(error));
+        return res.status(404).json(error);
     }
 };
+
+const verifyEmail = async (req, res, next) => {
+    try {
+        const user = await User.findOne({ email: req.body.email });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Usuario no encontrado' });
+        }
+
+        if (!bcrypt.compareSync(req.body.verificationToken, user.verificationToken)) {
+            console.log("token de verificación incorrecto")
+            return res.status(400).json({ message: 'Token de verificación incorrecto' });
+        }
+
+        user.isVerified = true;
+        user.verificationToken = "";
+        await user.save();
+
+        res.status(200).json({ message: 'Correo electrónico verificado correctamente' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al verificar el correo electrónico', error });
+    }
+};
+
 
 const login = async (req, res, next) => {
     try {
@@ -115,4 +144,4 @@ const addTourToFavorites = async (req, res, next) => {
 }
 
 
-module.exports = { getUsers, getUserById, updateUser, register, deleteUser, login, addTourToCart, addTourToFavorites };
+module.exports = { getUsers, getUserById, updateUser, register, verifyEmail, deleteUser, login, addTourToCart, addTourToFavorites };
