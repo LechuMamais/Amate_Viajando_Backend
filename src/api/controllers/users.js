@@ -33,12 +33,12 @@ const register = async (req, res, next) => {
         }
 
         const verificationToken = generateNumericToken();
+        await sendVerificationEmail(req.body.email, verificationToken);
+
         const hashedToken = bcrypt.hashSync(verificationToken, bcrypt.genSaltSync(10));
 
         const newUser = new User({ ...req.body, verificationToken: hashedToken, isVerified: false, role: 'user' });
         const user = await newUser.save();
-
-        await sendVerificationEmail(req.body.email, verificationToken);
 
         res.status(200).json({ user, message: 'Usuario registrado. Verifica tu correo electrónico.' });
     } catch (error) {
@@ -69,7 +69,7 @@ const verifyEmail = async (req, res, next) => {
     }
 };
 
-const generateNewEmailVerificationToken = async (req, res, next)=>{
+const generateNewEmailVerificationToken = async (req, res, next) => {
     try {
         const user = await User.findOne({ email: req.body.email });
 
@@ -77,17 +77,17 @@ const generateNewEmailVerificationToken = async (req, res, next)=>{
             return res.status(400).json({ message: 'Usuario no encontrado' });
         }
 
-        if (user.isVerified){
+        if (user.isVerified) {
             return res.status(400).json({ message: 'Email de usuario ya verificado' });
         }
 
         const newVerificationToken = generateNumericToken();
+        await sendVerificationEmail(user.email, newVerificationToken);
+
         const hashedToken = bcrypt.hashSync(newVerificationToken, bcrypt.genSaltSync(10));
 
         user.verificationToken = hashedToken;
         await user.save();
-
-        await sendVerificationEmail(user.email, newVerificationToken);
 
         res.status(200).json({ message: 'Hemos generado y enviado un nuevo código de verificación' });
     } catch (error) {
