@@ -13,7 +13,7 @@ const getUsers = async (req, res, next) => {
         res.status(200).json(users);
     } catch (error) {
         return (res.status(404).json(error));
-    }
+    };
 };
 
 const getUserById = async (req, res, next) => {
@@ -22,7 +22,7 @@ const getUserById = async (req, res, next) => {
         res.status(200).json(user);
     } catch (error) {
         return (res.status(404).json(error));
-    }
+    };
 };
 
 const register = async (req, res, next) => {
@@ -43,7 +43,7 @@ const register = async (req, res, next) => {
         res.status(200).json({ user, message: 'Usuario registrado. Verifica tu correo electrónico.' });
     } catch (error) {
         return res.status(404).json(error);
-    }
+    };
 };
 
 const verifyEmail = async (req, res, next) => {
@@ -66,7 +66,7 @@ const verifyEmail = async (req, res, next) => {
         res.status(200).json({ message: 'Correo electrónico verificado correctamente' });
     } catch (error) {
         res.status(500).json({ message: 'Error al verificar el correo electrónico', error });
-    }
+    };
 };
 
 const generateNewEmailVerificationToken = async (req, res, next) => {
@@ -77,12 +77,8 @@ const generateNewEmailVerificationToken = async (req, res, next) => {
             return res.status(400).json({ message: 'Usuario no encontrado' });
         }
 
-        if (user.isVerified) {
-            return res.status(400).json({ message: 'Email de usuario ya verificado' });
-        }
-
         const newVerificationToken = generateNumericToken();
-        await sendVerificationEmail(user.email, newVerificationToken);
+        await sendRecoverPasswordCode(user.email, newVerificationToken);
 
         const hashedToken = bcrypt.hashSync(newVerificationToken, bcrypt.genSaltSync(10));
 
@@ -92,8 +88,8 @@ const generateNewEmailVerificationToken = async (req, res, next) => {
         res.status(200).json({ message: 'Hemos generado y enviado un nuevo código de verificación' });
     } catch (error) {
         res.status(500).json({ message: 'Error al generar nuevo código de verificación', error });
-    }
-}
+    };
+};
 
 const login = async (req, res, next) => {
     try {
@@ -109,8 +105,8 @@ const login = async (req, res, next) => {
         res.status(200).json({ token, user });
     } catch (error) {
         return (res.status(404).json(error));
-    }
-}
+    };
+};
 
 const updateUser = async (req, res, next) => {
     try {
@@ -130,7 +126,7 @@ const updateUser = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         return (res.status(404).json(error));
-    }
+    };
 };
 
 const deleteUser = async (req, res, next) => {
@@ -139,8 +135,11 @@ const deleteUser = async (req, res, next) => {
         res.status(200).json(user);
     } catch (error) {
         return (res.status(404).json(error));
-    }
+    };
 };
+
+
+//  -----------------------------------------    CART & FAV    ------------------------------------------  //
 
 const addTourToCart = async (req, res, next) => {
     try {
@@ -152,8 +151,8 @@ const addTourToCart = async (req, res, next) => {
 
     } catch (error) {
         return (res.status(404).json(error));
-    }
-}
+    };
+};
 
 const addTourToFavorites = async (req, res, next) => {
     try {
@@ -165,8 +164,8 @@ const addTourToFavorites = async (req, res, next) => {
 
     } catch (error) {
         return (res.status(404).json(error));
-    }
-}
+    };
+};
 
 
 module.exports = { getUsers, getUserById, updateUser, register, generateNewEmailVerificationToken, verifyEmail, deleteUser, login, addTourToCart, addTourToFavorites };
