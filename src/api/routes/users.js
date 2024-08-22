@@ -1,6 +1,6 @@
 const { isAuth } = require("../../middlewares/isAuth");
 
-const { getUsers, getUserById, register, login, updateUser, deleteUser, addTourToCart, addTourToFavorites, verifyEmail, generateNewEmailVerificationToken } = require("../controllers/users");
+const { getUsers, getUserById, register, login, updateUser, deleteUser, addTourToCart, addTourToFavorites, verifyEmail, generateNewEmailVerificationToken, resetPassword } = require("../controllers/users");
 
 const usersRouter = require("express").Router();
 
@@ -9,6 +9,7 @@ usersRouter.get("/:id", getUserById);
 usersRouter.post("/register", register);
 usersRouter.post("/verify-email", verifyEmail);
 usersRouter.post("/generateNewVerificationToken", generateNewEmailVerificationToken);
+usersRouter.post("/reset-password", resetPassword);
 usersRouter.post("/login", login);
 usersRouter.put("/:id", [isAuth], updateUser);
 usersRouter.delete("/:id", [isAuth], deleteUser);

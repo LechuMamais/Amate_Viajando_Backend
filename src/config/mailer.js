@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
-  secure: true, // true para 465, false para otros puertos
+  secure: process.env.EMAIL_PORT === '465', // true para 465, false para otros puertos
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -27,26 +27,30 @@ const sendVerificationEmail = (to, token) => {
       </div>
     `,
   };
+  return transporter.sendMail(mailOptions);
 };
 
-  const sendRecoverPasswordCode = (to, token) => {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to,
-      subject: 'Amate Viajando - Recuperar contraseña',
-      html: `
-        <div style="text-align: center;">
-          <img src="url_del_logo" alt="Logo" style="width: 150px;"/>
-          <h1>Recuperación de contraseña</h1>
-          <h3>¿Has olvidado tu contraseña? Éste es tu código de recuperación de cuenta.</h3>
-          <h2>${token}</h2>
-          <p>Introduce este código para recuperar tu contraseña.</p>
-          <img src="url_de_la_imagen" alt="Imagen" style="width: 100%;"/>
-        </div>
-      `,
-    };
+const sendRecoverPasswordCode = (to, token) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to,
+    subject: 'Amate Viajando - Recuperar contraseña',
+    html: `
+      <div style="text-align: center;">
+        <img src="url_del_logo" alt="Logo" style="width: 150px;"/>
+        <h1>Recuperación de contraseña</h1>
+        <h3>¿Has olvidado tu contraseña? Éste es tu código de recuperación de cuenta.</h3>
+        <h2>${token}</h2>
+        <p>Introduce este código para recuperar tu contraseña.</p>
+        <img src="url_de_la_imagen" alt="Imagen" style="width: 100%;"/>
+      </div>
+    `,
+  };
 
   return transporter.sendMail(mailOptions);
 };
 
-module.exports = sendVerificationEmail, sendRecoverPasswordCode
+module.exports = {
+  sendVerificationEmail,
+  sendRecoverPasswordCode
+};

@@ -1,4 +1,4 @@
-const sendVerificationEmail = require("../../config/mailer");
+const { sendVerificationEmail, sendRecoverPasswordCode } = require("../../config/mailer");
 const generateNumericToken = require("../../utils/generateNumericToken");
 const { generateKey } = require("../../utils/jwt");
 const User = require("../models/users");
@@ -20,6 +20,23 @@ const getUserById = async (req, res, next) => {
     try {
         const user = await User.findById(req.params.id)
         res.status(200).json(user);
+    } catch (error) {
+        return (res.status(404).json(error));
+    };
+};
+
+const login = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+        if (!bcrypt.compareSync(password, user.password)) {
+            return res.status(400).json({ message: "Wrong password" });
+        }
+        const token = generateKey(user._id);
+        res.status(200).json({ token, user });
     } catch (error) {
         return (res.status(404).json(error));
     };
@@ -71,18 +88,20 @@ const verifyEmail = async (req, res, next) => {
 
 const generateNewEmailVerificationToken = async (req, res, next) => {
     try {
-        const user = await User.findOne({ email: req.body.email });
-
+        const {email}=req.body;
+        const user = await User.findOne({ email });
+        
         if (!user) {
             return res.status(400).json({ message: 'Usuario no encontrado' });
         }
-
+        
         const newVerificationToken = generateNumericToken();
-        await sendRecoverPasswordCode(user.email, newVerificationToken);
-
+        await sendRecoverPasswordCode(email, newVerificationToken);
+        
         const hashedToken = bcrypt.hashSync(newVerificationToken, bcrypt.genSaltSync(10));
 
         user.verificationToken = hashedToken;
+
         await user.save();
 
         res.status(200).json({ message: 'Hemos generado y enviado un nuevo código de verificación' });
@@ -91,22 +110,30 @@ const generateNewEmailVerificationToken = async (req, res, next) => {
     };
 };
 
-const login = async (req, res, next) => {
+const resetPassword = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, verificationToken, newPassword } = req.body;
+
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: "User not found" });
+            return res.status(400).json({ message: 'Usuario no encontrado' });
         }
-        if (!bcrypt.compareSync(password, user.password)) {
-            return res.status(400).json({ message: "Wrong password" });
+
+        if (!bcrypt.compareSync(verificationToken, user.verificationToken)) {
+            return res.status(400).json({ message: 'Token de verificación incorrecto' });
         }
-        const token = generateKey(user._id);
-        res.status(200).json({ token, user });
+
+        user.password = newPassword;
+        user.verificationToken = "";
+
+        await user.save();
+
+        res.status(200).json({ message: 'Contraseña restablecida correctamente' });
     } catch (error) {
-        return (res.status(404).json(error));
-    };
+        res.status(500).json({ message: 'Error al restablecer la contraseña', error });
+    }
 };
+
 
 const updateUser = async (req, res, next) => {
     try {
@@ -168,4 +195,4 @@ const addTourToFavorites = async (req, res, next) => {
 };
 
 
-module.exports = { getUsers, getUserById, updateUser, register, generateNewEmailVerificationToken, verifyEmail, deleteUser, login, addTourToCart, addTourToFavorites };
+module.exports = { getUsers, getUserById, login, updateUser, register, generateNewEmailVerificationToken, resetPassword, verifyEmail, deleteUser, addTourToCart, addTourToFavorites };
