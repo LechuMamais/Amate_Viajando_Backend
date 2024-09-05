@@ -18,20 +18,19 @@ const getUsers = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
     try {
-      // Buscar el usuario por su ID y hacer populate de favouriteTours y shoppingCart
       const user = await User.findById(req.params.id)
         .populate({
           path: 'favouriteTours.tourId',
           populate: {
-            path: 'images.imgObj', // Poblamos las imágenes de cada tour
-            model: 'images' // El modelo de la colección de imágenes
+            path: 'images.imgObj',
+            model: 'images'
           }
         })
         .populate({
           path: 'shoppingCart.tourId',
           populate: {
-            path: 'images.imgObj', // Poblamos las imágenes de cada tour
-            model: 'images' // El modelo de la colección de imágenes
+            path: 'images.imgObj',
+            model: 'images'
           }
         })
 
