@@ -8,8 +8,14 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false, required: true },
   verificationToken: { type: String, required: false },
   role: { type: String, enum: ["admin", "user"], default: "user", required: true },
-  favouriteTours: [{ type: mongoose.Types.ObjectId, ref: "tours" }],
-  shoppingCart: [{ type: mongoose.Types.ObjectId, ref: "tours" }]
+  favouriteTours: [{
+    destinationId: { type: mongoose.Types.ObjectId, ref: "destinations" },
+    tourId: { type: mongoose.Types.ObjectId, ref: "tours" }
+  }],
+  shoppingCart: [{
+    destinationId: { type: mongoose.Types.ObjectId, ref: "destinations" },
+    tourId: { type: mongoose.Types.ObjectId, ref: "tours" }
+  }]
 }, {
   timestamps: true,
   collection: "users"

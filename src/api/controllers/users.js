@@ -197,9 +197,9 @@ const addTourToCart = async (req, res, next) => {
 
 const addTourToFavorites = async (req, res, next) => {
     try {
-        const { user_id, tour_id } = req.params;
+        const { user_id, tour_id, destination_id } = req.body;
         const user = await User.findById(user_id);
-        user.favouriteTours = [...user.favouriteTours, tour_id];
+        user.favouriteTours = [...user.favouriteTours, {destinationId: destination_id, tourId: tour_id}];
         const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
         return res.status(200).json(userUpdated);
 
