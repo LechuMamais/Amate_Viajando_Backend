@@ -205,15 +205,27 @@ const addTourToFavorites = async (req, res, next) => {
     try {
         const { user_id, tour_id } = req.params;
         const { destination_id } = req.body;
+
         const user = await User.findById(user_id);
-        user.favouriteTours = [...user.favouriteTours, {destinationId: destination_id, tourId: tour_id}];
-        const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
-        return res.status(200).json(userUpdated);
+
+        const isTourInFavorites = user.favouriteTours.some(favTour => 
+            favTour.tourId.toString() === tour_id && favTour.destinationId.toString() === destination_id
+        );
+
+        if (!isTourInFavorites) {
+            user.favouriteTours.push({ destinationId: destination_id, tourId: tour_id });
+
+            const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
+            return res.status(200).json(userUpdated);
+        }
+
+        return res.status(200).json({ message: 'Tour already in favorites', user });
 
     } catch (error) {
-        return (res.status(404).json(error));
-    };
+        return res.status(404).json({ message: 'Error adding tour to favorites', error });
+    }
 };
+
 
 
 module.exports = { getUsers, getUserById, login, updateUser, register, generateNewEmailVerificationToken, resetPassword, verifyEmail, deleteUser, addTourToCart, addTourToFavorites };
