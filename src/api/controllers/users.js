@@ -18,26 +18,33 @@ const getUsers = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
     try {
-        const user = await User.findById(req.params.id)
+      // Buscar el usuario por su ID y hacer populate de favouriteTours y shoppingCart
+      const user = await User.findById(req.params.id)
         .populate({
-            path: 'favouriteTours',
-            populate: {
-              path: 'images.imgObj', // Poblamos las imágenes de cada tour
-              model: 'images' // El modelo de la colección de imágenes
-            }
-          })
-          .populate({
-            path: 'shoppingCart',
-            populate: {
-              path: 'images.imgObj', // Poblamos las imágenes de cada tour
-              model: 'images' // El modelo de la colección de imágenes
-            }
-          });
-        res.status(200).json(user);
+          path: 'favouriteTours.tourId',
+          populate: {
+            path: 'images.imgObj', // Poblamos las imágenes de cada tour
+            model: 'images' // El modelo de la colección de imágenes
+          }
+        })
+        .populate({
+          path: 'shoppingCart.tourId',
+          populate: {
+            path: 'images.imgObj', // Poblamos las imágenes de cada tour
+            model: 'images' // El modelo de la colección de imágenes
+          }
+        })
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json(user);
     } catch (error) {
-        return (res.status(404).json(error));
-    };
-};
+      res.status(500).json({ message: 'Error fetching user', error: error.message });
+    }
+  };
+  
 
 const login = async (req, res, next) => {
     try {
