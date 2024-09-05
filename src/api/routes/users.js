@@ -1,6 +1,6 @@
 const { isAuth } = require("../../middlewares/isAuth");
 
-const { getUsers, getUserById, register, login, updateUser, deleteUser, addTourToCart, addTourToFavorites, verifyEmail, generateNewEmailVerificationToken, resetPassword } = require("../controllers/users");
+const { getUsers, getUserById, register, login, updateUser, deleteUser, addTourToCart, addTourToFavorites, verifyEmail, generateNewEmailVerificationToken, resetPassword, removeTourFromFavorites } = require("../controllers/users");
 
 const usersRouter = require("express").Router();
 
@@ -18,5 +18,7 @@ usersRouter.get("/checkLogged/:id", [isAuth], getUserById); // Esta ruta utiliza
 
 usersRouter.put("/addTourToCart/:user_id/:tour_id", [isAuth], addTourToCart)
 usersRouter.put("/addTourToFavorites/:user_id/:tour_id", [isAuth], addTourToFavorites)
+usersRouter.put("/removeTourToFavorites/:user_id/:tour_id", [isAuth], removeTourFromFavorites)
+
 
 module.exports = usersRouter;

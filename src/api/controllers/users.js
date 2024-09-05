@@ -18,32 +18,32 @@ const getUsers = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
     try {
-      const user = await User.findById(req.params.id)
-        .populate({
-          path: 'favouriteTours.tourId',
-          populate: {
-            path: 'images.imgObj',
-            model: 'images'
-          }
-        })
-        .populate({
-          path: 'shoppingCart.tourId',
-          populate: {
-            path: 'images.imgObj',
-            model: 'images'
-          }
-        })
+        const user = await User.findById(req.params.id)
+            .populate({
+                path: 'favouriteTours.tourId',
+                populate: {
+                    path: 'images.imgObj',
+                    model: 'images'
+                }
+            })
+            .populate({
+                path: 'shoppingCart.tourId',
+                populate: {
+                    path: 'images.imgObj',
+                    model: 'images'
+                }
+            })
 
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      res.status(200).json(user);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json(user);
     } catch (error) {
-      res.status(500).json({ message: 'Error fetching user', error: error.message });
+        res.status(500).json({ message: 'Error fetching user', error: error.message });
     }
-  };
-  
+};
+
 
 const login = async (req, res, next) => {
     try {
@@ -108,16 +108,16 @@ const verifyEmail = async (req, res, next) => {
 
 const generateNewEmailVerificationToken = async (req, res, next) => {
     try {
-        const {email}=req.body;
+        const { email } = req.body;
         const user = await User.findOne({ email });
-        
+
         if (!user) {
             return res.status(400).json({ message: 'Usuario no encontrado' });
         }
-        
+
         const newVerificationToken = generateNumericToken();
         await sendRecoverPasswordCode(email, newVerificationToken);
-        
+
         const hashedToken = bcrypt.hashSync(newVerificationToken, bcrypt.genSaltSync(10));
 
         user.verificationToken = hashedToken;
@@ -188,18 +188,6 @@ const deleteUser = async (req, res, next) => {
 
 //  -----------------------------------------    CART & FAV    ------------------------------------------  //
 
-const addTourToCart = async (req, res, next) => {
-    try {
-        const { user_id, tour_id } = req.params;
-        const user = await User.findById(user_id);
-        user.shoppingCart = [...user.shoppingCart, tour_id];
-        const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
-        return res.status(200).json(userUpdated);
-
-    } catch (error) {
-        return (res.status(404).json(error));
-    };
-};
 
 const addTourToFavorites = async (req, res, next) => {
     try {
@@ -208,7 +196,7 @@ const addTourToFavorites = async (req, res, next) => {
 
         const user = await User.findById(user_id);
 
-        const isTourInFavorites = user.favouriteTours.some(favTour => 
+        const isTourInFavorites = user.favouriteTours.some(favTour =>
             favTour.tourId.toString() === tour_id && favTour.destinationId.toString() === destination_id
         );
 
@@ -226,6 +214,43 @@ const addTourToFavorites = async (req, res, next) => {
     }
 };
 
+const removeTourFromFavorites = async (req, res, next) => {
+    try {
+        const { user_id, tour_id } = req.params;
+        const user = await User.findById(user_id);
+
+        const isTourInFavorites = user.favouriteTours.some(favTour =>
+            favTour.tourId.toString() === tour_id && favTour.destinationId.toString() === destination_id
+        );
+
+        if (isTourInFavorites) {
+            user.favouriteTours = user.favouriteTours.filter(favTour =>
+                !(favTour.tourId.toString() === tour_id && favTour.destinationId.toString() === destination_id)
+            );
+
+            const userUpdated = await User.findByIdAndUpdate(user_id, { favouriteTours: user.favouriteTours }, { new: true });
+            return res.status(200).json(userUpdated);
+        }
+
+        return res.status(200).json({ message: 'Tour not found in favorites', user });
+
+    } catch (error) {
+        return res.status(404).json({ message: 'Error removing tour from favorites', error });
+    }
+}
+
+const addTourToCart = async (req, res, next) => {
+    try {
+        const { user_id, tour_id } = req.params;
+        const user = await User.findById(user_id);
+        user.shoppingCart = [...user.shoppingCart, tour_id];
+        const userUpdated = await User.findByIdAndUpdate(user_id, user, { new: true });
+        return res.status(200).json(userUpdated);
+
+    } catch (error) {
+        return (res.status(404).json(error));
+    };
+};
 
 
-module.exports = { getUsers, getUserById, login, updateUser, register, generateNewEmailVerificationToken, resetPassword, verifyEmail, deleteUser, addTourToCart, addTourToFavorites };
+module.exports = { getUsers, getUserById, login, updateUser, register, generateNewEmailVerificationToken, resetPassword, verifyEmail, deleteUser, addTourToCart, addTourToFavorites, removeTourFromFavorites };
