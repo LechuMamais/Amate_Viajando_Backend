@@ -19,8 +19,20 @@ const getUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
     try {
         const user = await User.findById(req.params.id)
-        .populate('favouriteTours')
-        .populate('shoppingCart');
+        .populate({
+            path: 'favouriteTours',
+            populate: {
+              path: 'images.imgObj', // Poblamos las imágenes de cada tour
+              model: 'images' // El modelo de la colección de imágenes
+            }
+          })
+          .populate({
+            path: 'shoppingCart',
+            populate: {
+              path: 'images.imgObj', // Poblamos las imágenes de cada tour
+              model: 'images' // El modelo de la colección de imágenes
+            }
+          });
         res.status(200).json(user);
     } catch (error) {
         return (res.status(404).json(error));
