@@ -217,6 +217,8 @@ const addTourToFavorites = async (req, res, next) => {
 const removeTourFromFavorites = async (req, res, next) => {
     try {
         const { user_id, tour_id } = req.params;
+        const { destination_id } = req.body;
+
         const user = await User.findById(user_id);
 
         const isTourInFavorites = user.favouriteTours.some(favTour =>
@@ -228,16 +230,19 @@ const removeTourFromFavorites = async (req, res, next) => {
                 !(favTour.tourId.toString() === tour_id && favTour.destinationId.toString() === destination_id)
             );
 
-            const userUpdated = await User.findByIdAndUpdate(user_id, { favouriteTours: user.favouriteTours }, { new: true });
-            return res.status(200).json(userUpdated);
+            await user.save();
+
+            return res.status(200).json({ message: 'Tour removed from favorites', user });
         }
 
-        return res.status(200).json({ message: 'Tour not found in favorites', user });
+        return res.status(404).json({ message: 'Tour not found in favorites', user });
 
     } catch (error) {
-        return res.status(404).json({ message: 'Error removing tour from favorites', error });
+        return res.status(500).json({ message: 'Error removing tour from favorites', error });
     }
-}
+};
+
+
 
 const addTourToCart = async (req, res, next) => {
     try {
