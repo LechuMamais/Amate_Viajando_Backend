@@ -33,20 +33,12 @@ const createArticle = async (req, res) => {
     try {
         const { title, subtitle, content, images } = req.body;
 
-        const imageRefs = await Promise.all(images.map(async (img) => {
+        const imageRefs = await Promise.all(images?.map(async (img) => {
             const imgDoc = await Images.findById(img.imgObj);
             if (!imgDoc) {
                 throw new Error(`Image with id ${img.imgObj} and order ${img.order} not found`);
             }
             return { order: img.order, imgObj: imgDoc._id };
-        }));
-
-        const tourRefs = await Promise.all(tours.map(async (tour) => {
-            const tourDoc = await Tours.findById(tour.tourObj);
-            if (!tourDoc) {
-                throw new Error(`Tour with id ${tour.tourObj} and order ${tour.order} not found`);
-            }
-            return { order: tour.order, tourObj: tourDoc._id };
         }));
 
         const newArticle = new Articles({
