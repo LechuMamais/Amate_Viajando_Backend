@@ -3,31 +3,38 @@ const Images = require('../models/images');
 
 const getArticles = async (req, res, next) => {
     try {
-        // Consulta con proyección directa, no incluir content, y solo primer imagen
+        // Consulta con proyección directa
         const articles = await Articles.find({}, {
             _id: 1, // Incluir _id
             title: 1, // Incluir title
             subtitle: 1, // Incluir subtitle
-            images: 1 // Incluir images, aunque luego sólo populemos la primera
+            images: 1 // Incluir images
         }).populate({
             path: 'images.imgObj', // Poblamos el campo imgObj
-            //options: { limit: 1 }, // Solo queremos el primer objeto del array
         });
-        /*
-                const transformedArticles = articles.map(article => ({
-                    _id: article._id,
-                    title: article.title,
-                    subtitle: article.subtitle,
-                    images: [article.images[0]], // Incluimos solo el primer objeto, o null si no hay datos
-                }));*/
+
+        // Transformamos los artículos
+        const transformedArticles = articles.map(article => {
+            // Ordenamos las imágenes por el valor de `order`
+            const sortedImages = article.images.sort((a, b) => a.order - b.order);
+
+            // Retornamos solo la imagen con el menor `order` o null si no hay imágenes
+            return {
+                _id: article._id,
+                title: article.title,
+                subtitle: article.subtitle,
+                images: sortedImages.length > 0 ? [sortedImages[0]] : [],
+            };
+        });
 
         // Enviar respuesta al cliente
-        res.status(200).json(articles);
+        res.status(200).json(transformedArticles);
     } catch (error) {
         console.error('Error al obtener los artículos:', error);
         res.status(404).json({ message: 'No se pudieron obtener los artículos', error });
     }
 };
+
 
 
 const getArticleById = async (req, res, next) => {
