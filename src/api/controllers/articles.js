@@ -4,13 +4,15 @@ const Images = require('../models/images');
 const getArticles = async (req, res, next) => {
     try {
         const options = {
-            projection: { _id: 0, title: 1, subtitle, images },
+            projection: { _id: 0, title: 1, subtitle, images: 1 },
         };
         const articles = await Articles.find({}, options)
             .populate({
                 path: 'images.imgObj',
                 options: { limit: 1 },
             });
+
+        console.log(articles)
 
         res.status(200).json(articles);
     } catch (error) {
