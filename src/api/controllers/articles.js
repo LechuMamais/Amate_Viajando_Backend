@@ -8,16 +8,21 @@ const getArticles = async (req, res, next) => {
             _id: 1, // Incluir _id
             title: 1, // Incluir title
             subtitle: 1, // Incluir subtitle
-            images: 1
+            images: 1 // Incluir images, aunque luego sólo populemos la primera
         }).populate({
             path: 'images.imgObj', // Poblamos el campo imgObj
             options: { limit: 1 }, // Solo queremos el primer objeto del array
         });
 
-        console.log(JSON.stringify(articles, null, 2));
+        const transformedArticles = articles.map(article => ({
+            _id: article._id,
+            title: article.title,
+            subtitle: article.subtitle,
+            images: [article.images[0]], // Incluimos solo el primer objeto, o null si no hay datos
+        }));
 
         // Enviar respuesta al cliente
-        res.status(200).json(articles);
+        res.status(200).json(transformedArticles);
     } catch (error) {
         console.error('Error al obtener los artículos:', error);
         res.status(404).json({ message: 'No se pudieron obtener los artículos', error });
