@@ -3,7 +3,7 @@ const Images = require('../models/images');
 
 const getArticles = async (req, res, next) => {
     try {
-        const articles = await Articles.find()
+        const articles = await Articles.find({}, '_id title subtitle images.imgObj')
             .populate({
                 path: 'images.imgObj',
                 options: { limit: 1 },
