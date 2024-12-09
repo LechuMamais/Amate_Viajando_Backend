@@ -17,6 +17,8 @@ const getArticles = async (req, res, next) => {
             imgObj: article.images.imgObj[0] || null, // Solo el primer objeto o null si no existe
         }));
 
+        console.log(transformedArticles);
+
         res.status(200).json(transformedArticles);
     } catch (error) {
         return res.status(404).json(error);
