@@ -14,6 +14,8 @@ const getArticles = async (req, res, next) => {
             options: { limit: 1 }, // Solo queremos el primer objeto del array
         });
 
+        console.log(JSON.stringify(articles, null, 2));
+
         // Transformar resultados para incluir solo el primer objeto de imgObj
         const transformedArticles = articles.map(article => ({
             _id: article._id,
