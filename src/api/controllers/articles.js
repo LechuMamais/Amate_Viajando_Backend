@@ -8,7 +8,6 @@ const getArticles = async (req, res, next) => {
             _id: 1, // Incluir _id
             title: 1, // Incluir title
             subtitle: 1, // Incluir subtitle
-            'images.imgObj': 1, // Incluir el array images.imgObj
         }).populate({
             path: 'images.imgObj', // Poblamos el campo imgObj
             options: { limit: 1 }, // Solo queremos el primer objeto del array
