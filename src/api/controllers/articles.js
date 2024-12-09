@@ -1,13 +1,23 @@
 const Articles = require("../models/articles");
 const Images = require('../models/images');
-const Tours = require("../models/tours");
 
 const getArticles = async (req, res, next) => {
     try {
-        const articles = await Articles.find()
-            .populate('images.imgObj')
+        const articles = await Articles.find({}, '_id title subtitle images.imgObj') // Proyección en Mongoose
+            .populate({
+                path: 'images.imgObj', // Popula solo imgObj
+                options: { limit: 1 }, // Limita a 1 objeto (solo el primero)
+            });
 
-        res.status(200).json(articles);
+        // Transformamos los datos para devolver solo el primer objeto de imgObj
+        const transformedArticles = articles.map(article => ({
+            _id: article._id,
+            title: article.title,
+            subtitle: article.subtitle,
+            imgObj: article.images.imgObj[0] || null, // Solo el primer objeto o null si no existe
+        }));
+
+        res.status(200).json(transformedArticles);
     } catch (error) {
         return res.status(404).json(error);
     }
