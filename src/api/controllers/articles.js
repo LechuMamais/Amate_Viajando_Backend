@@ -1,25 +1,15 @@
-import Articles, { find, findById, findByIdAndUpdate, findByIdAndDelete } from "../models/articles";
-import { findById as _findById } from '../models/images';
+const Articles = require("../models/articles");
+const Images = require('../models/images');
 
 const getArticles = async (req, res, next) => {
     try {
-        const articles = await Articles.find({}, '_id title subtitle images.imgObj') // Proyección en Mongoose
+        const articles = await Articles.find()
             .populate({
-                path: 'images.imgObj', // Popula solo imgObj
-                options: { limit: 1 }, // Limita a 1 objeto (solo el primero)
+                path: 'images.imgObj',
+                options: { limit: 1 },
             });
 
-        // Transformamos los datos para devolver solo el primer objeto de imgObj
-        const transformedArticles = articles.map(article => ({
-            _id: article._id,
-            title: article.title,
-            subtitle: article.subtitle,
-            imgObj: article.images.imgObj[0] || null, // Solo el primer objeto o null si no existe
-        }));
-
-        console.log(transformedArticles);
-
-        res.status(200).json(transformedArticles);
+        res.status(200).json(articles);
     } catch (error) {
         return res.status(404).json(error);
     }
@@ -27,7 +17,7 @@ const getArticles = async (req, res, next) => {
 
 const getArticleById = async (req, res, next) => {
     try {
-        const article = await findById(req.params.id)
+        const article = await Articles.findById(req.params.id)
             .populate('images.imgObj')
 
         if (!article) {
@@ -46,7 +36,7 @@ const createArticle = async (req, res) => {
         const { title, subtitle, content, images } = req.body;
 
         const imageRefs = await Promise.all(images?.map(async (img) => {
-            const imgDoc = await _findById(img.imgObj);
+            const imgDoc = await Images.findById(img.imgObj);
             if (!imgDoc) {
                 throw new Error(`Image with id ${img.imgObj} and order ${img.order} not found`);
             }
@@ -70,7 +60,7 @@ const createArticle = async (req, res) => {
 
 const updateArticle = async (req, res, next) => {
     try {
-        const article = await findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const article = await Articles.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.status(200).json(article);
     } catch (error) {
         return res.status(404).json(error);
@@ -81,7 +71,7 @@ const updateArticle = async (req, res, next) => {
 const deleteImageFromArticle = async (req, res, next) => {
     const { article_id, image_id } = req.params;
     try {
-        const article = await findById(article_id);
+        const article = await Articles.findById(article_id);
         if (!article) {
             return res.status(404).json({ message: "Article no encontrado" });
         }
@@ -96,7 +86,7 @@ const deleteImageFromArticle = async (req, res, next) => {
         article.images = [];
         article.images = newImagesArray;
 
-        const updatedArticle = await findByIdAndUpdate(article_id, article, { new: true })
+        const updatedArticle = await Articles.findByIdAndUpdate(article_id, article, { new: true })
         res.status(200).json(updatedArticle);
     } catch (error) {
         res.status(500).json({ message: "Error al actualizar el Article", error });
@@ -106,7 +96,7 @@ const deleteImageFromArticle = async (req, res, next) => {
 
 const deleteArticle = async (req, res, next) => {
     try {
-        const article = await findByIdAndDelete(req.params.id);
+        const article = await Articles.findByIdAndDelete(req.params.id);
         res.status(200).json(article);
     } catch (error) {
         return res.status(404).json(error);
@@ -114,4 +104,4 @@ const deleteArticle = async (req, res, next) => {
 };
 
 
-export default { getArticles, getArticleById, createArticle, updateArticle, deleteImageFromArticle, deleteArticle };
+module.exports = { getArticles, getArticleById, createArticle, updateArticle, deleteImageFromArticle, deleteArticle };
