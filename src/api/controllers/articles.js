@@ -3,7 +3,7 @@ const Images = require('../models/images');
 
 const getArticles = async (req, res, next) => {
     try {
-        // Consulta con proyección directa
+        // Consulta con proyección directa, no incluir content, y solo primer imagen
         const articles = await Articles.find({}, {
             _id: 1, // Incluir _id
             title: 1, // Incluir title
@@ -13,19 +13,8 @@ const getArticles = async (req, res, next) => {
             path: 'images.imgObj', // Poblamos el campo imgObj
             options: { limit: 1 }, // Solo queremos el primer objeto del array
         });
-
-        console.log(JSON.stringify(articles, null, 2));
-
-        // Transformar resultados para incluir solo el primer objeto de imgObj
-        const transformedArticles = articles.map(article => ({
-            _id: article._id,
-            title: article.title,
-            subtitle: article.subtitle,
-            imgObj: article.images.imgObj[0] || null, // Incluimos solo el primer objeto, o null si no hay datos
-        }));
-
         // Enviar respuesta al cliente
-        res.status(200).json(transformedArticles);
+        res.status(200).json(articles);
     } catch (error) {
         console.error('Error al obtener los artículos:', error);
         res.status(404).json({ message: 'No se pudieron obtener los artículos', error });
