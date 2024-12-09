@@ -6,7 +6,7 @@ const getArticles = async (req, res, next) => {
         const options = {
             projection: { _id: 0, title: 1, subtitle, images },
         };
-        const articles = await Articles.find(query, options)
+        const articles = await Articles.find({}, options)
             .populate({
                 path: 'images.imgObj',
                 options: { limit: 1 },
