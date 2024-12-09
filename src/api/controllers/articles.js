@@ -3,7 +3,7 @@ import { findById as _findById } from '../models/images';
 
 const getArticles = async (req, res, next) => {
     try {
-        const articles = await find({}, '_id title subtitle images.imgObj') // Proyección en Mongoose
+        const articles = await Articles.find({}, '_id title subtitle images.imgObj') // Proyección en Mongoose
             .populate({
                 path: 'images.imgObj', // Popula solo imgObj
                 options: { limit: 1 }, // Limita a 1 objeto (solo el primero)
