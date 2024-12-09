@@ -13,6 +13,9 @@ const getArticles = async (req, res, next) => {
             path: 'images.imgObj', // Poblamos el campo imgObj
             options: { limit: 1 }, // Solo queremos el primer objeto del array
         });
+
+        console.log(JSON.stringify(articles, null, 2));
+
         // Enviar respuesta al cliente
         res.status(200).json(articles);
     } catch (error) {
