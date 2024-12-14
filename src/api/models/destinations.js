@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { ISO2 } = require('./iso2-list'); // Importa tu lista de códigos ISO2
+const { ISO2 } = require('../../resources/countriesISOCode'); // Importa tu lista de códigos ISO2
 
 const destinationsSchema = new mongoose.Schema({
     name: { type: String, required: true },
