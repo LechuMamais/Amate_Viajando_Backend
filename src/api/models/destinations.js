@@ -20,22 +20,26 @@ const destinationsSchema = new mongoose.Schema({
     ],
     country_name: {
         type: String,
-        required: [true, 'Country name is required'],
         validate: {
             validator: function (value) {
+                if (!value) return false;
                 return ISO2.some(country => country.name === value);
             },
-            message: props => `${props.value} is not a valid country name`
+            message: props => props.value
+                ? `${props.value} is not a valid country name`
+                : `Country name is required`
         }
     },
     country_iso2code: {
         type: String,
-        required: [true, 'Country ISO2 code is required'],
         validate: {
             validator: function (value) {
+                if (!value) return false;
                 return ISO2.some(country => country.code === value);
             },
-            message: props => `${props.value} is not a valid ISO2 code`
+            message: props => props.value
+                ? `${props.value} is not a valid ISO2 code`
+                : `Country ISO2 code is required`
         }
     },
 }, {
