@@ -66,6 +66,8 @@ const createDestination = async (req, res) => {
             heading,
             description,
             longDescription,
+            country_iso2code,
+            country_name,
             images: imageRefs,
             tours: tourRefs
         });
@@ -89,7 +91,7 @@ const updateDestination = async (req, res, next) => {
 
 
 const deleteImageFromDestination = async (req, res, next) => {
-    const {destination_id, image_id} = req.params;
+    const { destination_id, image_id } = req.params;
     try {
         const destination = await Destinations.findById(destination_id);
         if (!destination) {
@@ -97,8 +99,8 @@ const deleteImageFromDestination = async (req, res, next) => {
         }
 
         let newImagesArray = [];
-        destination.images.forEach(image=>{
-            if(image.imgObj != image_id){
+        destination.images.forEach(image => {
+            if (image.imgObj != image_id) {
                 newImagesArray.push(image)
             }
         })
@@ -106,9 +108,9 @@ const deleteImageFromDestination = async (req, res, next) => {
         destination.images = [];
         destination.images = newImagesArray;
 
-        const updatedDestination = await Destinations.findByIdAndUpdate(destination_id, destination, {new: true})
+        const updatedDestination = await Destinations.findByIdAndUpdate(destination_id, destination, { new: true })
         res.status(200).json(updatedDestination);
-    } catch(error){
+    } catch (error) {
         res.status(500).json({ message: "Error al actualizar el Destination", error });
     }
 }
