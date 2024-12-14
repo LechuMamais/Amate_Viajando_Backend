@@ -49,7 +49,7 @@ export const ISO2 = [
     { code: 'CO', name: 'Colombia' },
     { code: 'KM', name: 'Comoros' },
     { code: 'CG', name: 'Congo' },
-    { code: 'CD', name: 'Congo}, Democratic Republic' },
+    { code: 'CD', name: 'Congo, Democratic Republic' },
     { code: 'CK', name: 'Cook Islands' },
     { code: 'CR', name: 'Costa Rica' },
     { code: 'CI', name: 'Cote D\'Ivoire' },
@@ -101,7 +101,7 @@ export const ISO2 = [
     { code: 'IS', name: 'Iceland' },
     { code: 'IN', name: 'India' },
     { code: 'ID', name: 'Indonesia' },
-    { code: 'IR', name: 'Iran}, Islamic Republic Of' },
+    { code: 'IR', name: 'Iran, Islamic Republic Of' },
     { code: 'IQ', name: 'Iraq' },
     { code: 'IE', name: 'Ireland' },
     { code: 'IM', name: 'Isle Of Man' },
@@ -140,7 +140,7 @@ export const ISO2 = [
     { code: 'MU', name: 'Mauritius' },
     { code: 'YT', name: 'Mayotte' },
     { code: 'MX', name: 'Mexico' },
-    { code: 'FM', name: 'Micronesia}, Federated States Of' },
+    { code: 'FM', name: 'Micronesia, Federated States Of' },
     { code: 'MD', name: 'Moldova' },
     { code: 'MC', name: 'Monaco' },
     { code: 'MN', name: 'Mongolia' },
@@ -166,7 +166,7 @@ export const ISO2 = [
     { code: 'OM', name: 'Oman' },
     { code: 'PK', name: 'Pakistan' },
     { code: 'PW', name: 'Palau' },
-    { code: 'PS', name: 'Palestinian Territory}, Occupied' },
+    { code: 'PS', name: 'Palestinian Territory, Occupied' },
     { code: 'PA', name: 'Panama' },
     { code: 'PG', name: 'Papua New Guinea' },
     { code: 'PY', name: 'Paraguay' },
@@ -245,5 +245,3 @@ export const ISO2 = [
     { code: 'ZM', name: 'Zambia' },
     { code: 'ZW', name: 'Zimbabwe' }
 ];
-
-module.exports = { ISO2 }
