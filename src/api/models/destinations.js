@@ -1,4 +1,8 @@
 const mongoose = require('mongoose');
+const { ISO2 } = require('../../resources/countriesISOCode');
+
+const validCountryCodes = ISO2.map(country => country.code);
+const validCountryNames = ISO2.map(country => country.name);
 
 const destinationsSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -17,6 +21,28 @@ const destinationsSchema = new mongoose.Schema({
             tourObj: { type: mongoose.Types.ObjectId, required: true, ref: "tours" }
         }
     ],
+    country_name: {
+        type: String,
+        required: true,
+        enum: validCountryNames,
+        validate: {
+            validator: function (value) {
+                return validCountryNames.includes(value);
+            },
+            message: props => `${props.value} is not a valid country name!`
+        }
+    },
+    country_iso2code: {
+        type: String,
+        required: true,
+        enum: validCountryCodes,
+        validate: {
+            validator: function (value) {
+                return validCountryCodes.includes(value);
+            },
+            message: props => `${props.value} is not a valid ISO2 code!`
+        }
+    }
 }, {
     timestamps: true,
     collection: "destinations"
