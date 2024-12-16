@@ -43,7 +43,7 @@ const getDestinationById = async (req, res, next) => {
 
 const createDestination = async (req, res) => {
     try {
-        const { name, heading, description, longDescription, images, tours } = req.body;
+        const { name, heading, description, longDescription, country_iso2code, country_name, images, tours } = req.body;
 
         const imageRefs = await Promise.all(images.map(async (img) => {
             const imgDoc = await Images.findById(img.imgObj);
