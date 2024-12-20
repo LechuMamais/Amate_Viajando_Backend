@@ -93,6 +93,7 @@ const createDestination = async (req, res) => {
 
             for (const [field, value] of Object.entries(fieldsToTranslate)) {
                 const translationResponse = await getTranslationFromOpenAI(lang, value);
+                console.log(`Traduciendo '${field}' al idioma '${lang}':`, translationResponse);
 
                 if (translationResponse.role !== "assistant" || !translationResponse.content) {
                     throw new Error(
