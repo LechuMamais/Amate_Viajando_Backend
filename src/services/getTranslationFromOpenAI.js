@@ -7,8 +7,10 @@ export const getTranslationFromOpenAI = async (language, text) => {
     const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
     });
+
+    const lang = language === 'eng' ? 'English' : language === 'ita' ? 'Italian' : language === 'por' ? 'Portuguese' : 'Unknown';
     try {
-        const message = `Return only the translation to the language with this ISO 639-2 code: '${language}' of the text between ': '${text}'
+        const message = `Return only the translation to the language ${lang}' of the text between ': '${text}'
         No other information is needed.`;
 
         const response = await openai.chat.completions.create({
