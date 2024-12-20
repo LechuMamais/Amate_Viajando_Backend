@@ -46,43 +46,52 @@ const createDestination = async (req, res) => {
     try {
         const { eng, esp, ita, por, images, tours, country_name, country_iso2code } = req.body;
 
-        // Idiomas disponibles
-        const languages = ["eng", "ita", "por", "esp"];
-        const translations = { eng, esp, ita, por };
+        // Validar que haya al menos un campo completo en algún idioma
+        const hasCompleteField = [eng, esp, ita, por].some(lang =>
+            lang &&
+            Object.values(lang).some(field => field && field.trim() !== "")
+        );
 
-        // Función para completar los campos vacíos en un idioma
-        const completeTranslations = async (targetLang, sourceLang) => {
-            for (const field of ["name", "heading", "description", "longDescription"]) {
-                if (!translations[targetLang][field]) {
-                    // Usar el valor del idioma base (sourceLang) como referencia
-                    const sourceValue = translations[sourceLang][field];
-                    if (sourceValue) {
-                        const translationResponse = await getTranslationFromOpenAI(targetLang, sourceValue);
-                        console.log(`Traduciendo '${field}' de '${sourceLang}' a '${targetLang}':`, translationResponse);
+        if (!hasCompleteField) {
+            return res.status(400).json({
+                message: "Debe existir al menos un campo completo en algún idioma."
+            });
+        }
 
-                        if (translationResponse.role !== "assistant" || !translationResponse.content) {
+        // Helper para completar las traducciones faltantes
+        const completeTranslations = async (fromLang, toLang) => {
+            const fields = ["name", "heading", "description", "longDescription"];
+            for (const field of fields) {
+                // Si falta un campo en el idioma destino, traducir desde el idioma origen
+                if (!req.body[toLang][field] || req.body[toLang][field].trim() === "") {
+                    const sourceText = req.body[fromLang][field];
+                    if (sourceText && sourceText.trim() !== "") {
+                        const translationResponse = await getTranslationFromOpenAI(toLang, sourceText);
+                        if (translationResponse.role === "assistant" && translationResponse.content) {
+                            req.body[toLang][field] = translationResponse.content.trim();
+                        } else {
                             throw new Error(
-                                `Error al traducir '${field}' de '${sourceLang}' a '${targetLang}': ${translationResponse.refusal || "Error desconocido"
-                                }`
+                                `Error al traducir '${field}' de '${fromLang}' a '${toLang}': ${translationResponse.refusal || "Error desconocido"}`
                             );
                         }
-
-                        // Asignar el resultado traducido al campo vacío
-                        translations[targetLang][field] = translationResponse.content.trim();
                     }
                 }
             }
         };
 
-        // Completar los valores vacíos para cada idioma
-        // Priorizar valores de `esp`, luego `eng` como base de traducción
-        await completeTranslations("eng", "esp"); // Traducir inglés desde español
-        await completeTranslations("ita", "esp"); // Traducir italiano desde español
-        await completeTranslations("por", "esp"); // Traducir portugués desde español
-        await completeTranslations("ita", "eng"); // Si falta algo en italiano, usar inglés como referencia
-        await completeTranslations("por", "eng"); // Si falta algo en portugués, usar inglés como referencia
+        // Idiomas disponibles
+        const languages = ["eng", "esp", "ita", "por"];
 
+        // Bucle para completar todas las combinaciones posibles
+        for (const fromLang of languages) {
+            for (const toLang of languages) {
+                if (fromLang !== toLang) {
+                    await completeTranslations(fromLang, toLang);
+                }
+            }
+        }
 
+        // Validar referencias de imágenes y tours
         const imageRefs = await Promise.all(
             images.map(async (img) => {
                 const imgDoc = await Images.findById(img.imgObj);
@@ -103,14 +112,14 @@ const createDestination = async (req, res) => {
             })
         );
 
-        // Crear un nuevo destino con las traducciones completadas
+        // Crear el nuevo destino
         const newDestination = new Destinations({
-            esp: translations.esp,
-            eng: translations.eng,
-            ita: translations.ita,
-            por: translations.por,
-            country_iso2code,
+            eng,
+            esp,
+            ita,
+            por,
             country_name,
+            country_iso2code,
             images: imageRefs,
             tours: tourRefs,
         });
@@ -124,6 +133,7 @@ const createDestination = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 
 
