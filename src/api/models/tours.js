@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const toursSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    heading: { type: String, required: true },
-    description: { type: String, required: true },
-    longDescription: { type: String, required: true },
+    name: { type: String },
+    heading: { type: String },
+    description: { type: Stringe },
+    longDescription: { type: String },
     eng: {
         name: { type: String, required: true },
         heading: { type: String, required: true },
