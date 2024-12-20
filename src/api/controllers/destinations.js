@@ -1,4 +1,4 @@
-const { getTranslationFromOpenAI } = require("../../services/getTranslationFromOpenAI");
+const { completeTranslations } = require("../../utils/completeTranslations");
 const Destinations = require("../models/destinations");
 const Images = require('../models/images');
 const Tours = require("../models/tours");
@@ -45,8 +45,8 @@ const getDestinationById = async (req, res, next) => {
 const createDestination = async (req, res) => {
     try {
         const { eng, esp, ita, por, images, tours, country_name, country_iso2code } = req.body;
+        const languages = ["eng", "esp", "ita", "por"];
 
-        // Validar que haya al menos un campo completo en algún idioma
         const hasCompleteField = [eng, esp, ita, por].some(lang =>
             lang &&
             Object.values(lang).some(field => field && field.trim() !== "")
@@ -58,31 +58,7 @@ const createDestination = async (req, res) => {
             });
         }
 
-        // Helper para completar las traducciones faltantes
-        const completeTranslations = async (fromLang, toLang) => {
-            const fields = ["name", "heading", "description", "longDescription"];
-            for (const field of fields) {
-                // Si falta un campo en el idioma destino, traducir desde el idioma origen
-                if (!req.body[toLang][field] || req.body[toLang][field].trim() === "") {
-                    const sourceText = req.body[fromLang][field];
-                    if (sourceText && sourceText.trim() !== "") {
-                        const translationResponse = await getTranslationFromOpenAI(toLang, sourceText);
-                        if (translationResponse.role === "assistant" && translationResponse.content) {
-                            req.body[toLang][field] = translationResponse.content.trim();
-                        } else {
-                            throw new Error(
-                                `Error al traducir '${field}' de '${fromLang}' a '${toLang}': ${translationResponse.refusal || "Error desconocido"}`
-                            );
-                        }
-                    }
-                }
-            }
-        };
 
-        // Idiomas disponibles
-        const languages = ["eng", "esp", "ita", "por"];
-
-        // Bucle para completar todas las combinaciones posibles
         for (const fromLang of languages) {
             for (const toLang of languages) {
                 if (fromLang !== toLang) {
@@ -91,7 +67,6 @@ const createDestination = async (req, res) => {
             }
         }
 
-        // Validar referencias de imágenes y tours
         const imageRefs = await Promise.all(
             images.map(async (img) => {
                 const imgDoc = await Images.findById(img.imgObj);
@@ -112,7 +87,6 @@ const createDestination = async (req, res) => {
             })
         );
 
-        // Crear el nuevo destino
         const newDestination = new Destinations({
             eng,
             esp,
@@ -124,7 +98,6 @@ const createDestination = async (req, res) => {
             tours: tourRefs,
         });
 
-        // Guardar en la base de datos
         await newDestination.save();
 
         res.status(201).json(newDestination);
