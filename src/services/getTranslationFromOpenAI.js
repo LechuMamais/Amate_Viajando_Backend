@@ -8,7 +8,7 @@ export const getTranslationFromOpenAI = async (language, text) => {
         apiKey: process.env.OPENAI_API_KEY,
     });
     try {
-        const message = `Return a translation to the language with this ISO 639-2 code: '${language}' of the text between ''': '''${text}'''`;
+        const message = `Return a translation to the language with this ISO 639-2 code: '${language}' of the text between ': '${text}'`;
 
         const response = await openai.chat.completions.create({
             model: 'gpt-3.5-turbo',
