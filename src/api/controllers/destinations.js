@@ -1,4 +1,4 @@
-const { completeTranslations } = require("../../utils/completeTranslations");
+const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Destinations = require("../models/destinations");
 const Images = require('../models/images');
 const Tours = require("../models/tours");
@@ -42,7 +42,6 @@ const getDestinationById = async (req, res, next) => {
     }
 };
 
-import { translateAllEmptyFields } from "./translateAllEmptyFields";
 
 const createDestination = async (req, res) => {
     try {
