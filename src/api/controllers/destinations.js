@@ -1,3 +1,4 @@
+const { checkAllFieldsAreComplete } = require("../../utils/CheckAFieldIsComplete");
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Destinations = require("../models/destinations");
 const Images = require('../models/images');
@@ -46,11 +47,7 @@ const createDestination = async (req, res) => {
     try {
         const { eng, esp, ita, por, images, tours, country_name, country_iso2code } = req.body;
 
-        // Validar que haya al menos un campo completo en algún idioma
-        const hasCompleteField = [eng, esp, ita, por].some(lang =>
-            lang &&
-            Object.values(lang).some(field => field && field.trim() !== "")
-        );
+        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -58,10 +55,8 @@ const createDestination = async (req, res) => {
             });
         }
 
-        // Completar campos faltantes en todos los idiomas
         await translateAllEmptyFields(req.body);
 
-        // Validar referencias de imágenes
         const imageRefs = await Promise.all(
             images.map(async (img) => {
                 const imgDoc = await Images.findById(img.imgObj);
@@ -72,7 +67,6 @@ const createDestination = async (req, res) => {
             })
         );
 
-        // Validar referencias de tours
         const tourRefs = await Promise.all(
             tours.map(async (tour) => {
                 const tourDoc = await Tours.findById(tour.tourObj);
@@ -83,7 +77,6 @@ const createDestination = async (req, res) => {
             })
         );
 
-        // Crear el nuevo destino
         const newDestination = new Destinations({
             eng,
             esp,
@@ -113,10 +106,7 @@ const updateDestination = async (req, res, next) => {
 
         const { eng, esp, ita, por } = req.body;
 
-        const hasCompleteField = [eng, esp, ita, por].some(lang =>
-            lang &&
-            Object.values(lang).some(field => field && field.trim() !== "")
-        );
+        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -124,12 +114,7 @@ const updateDestination = async (req, res, next) => {
             });
         }
 
-        const updatedBody = await translateAllEmptyFields({
-            eng,
-            esp,
-            ita,
-            por,
-        });
+        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por });
 
         const updatedDestination = await Destinations.findByIdAndUpdate(
             req.params.id,
