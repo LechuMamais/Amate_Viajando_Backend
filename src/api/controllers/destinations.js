@@ -42,7 +42,6 @@ const getDestinationById = async (req, res, next) => {
     }
 };
 
-
 const createDestination = async (req, res) => {
     try {
         const { eng, esp, ita, por, images, tours, country_name, country_iso2code } = req.body;
@@ -105,13 +104,43 @@ const createDestination = async (req, res) => {
     }
 };
 
-
 const updateDestination = async (req, res, next) => {
     try {
-        const destination = await Destinations.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.status(200).json(destination);
+        const destination = await Destinations.findById(req.params.id);
+        if (!destination) {
+            return res.status(404).json({ message: "Destino no encontrado." });
+        }
+
+        const { eng, esp, ita, por } = req.body;
+
+        const hasCompleteField = [eng, esp, ita, por].some(lang =>
+            lang &&
+            Object.values(lang).some(field => field && field.trim() !== "")
+        );
+
+        if (!hasCompleteField) {
+            return res.status(400).json({
+                message: "Debe existir al menos un campo completo en algún idioma."
+            });
+        }
+
+        const updatedBody = await translateAllEmptyFields({
+            eng,
+            esp,
+            ita,
+            por,
+        });
+
+        const updatedDestination = await Destinations.findByIdAndUpdate(
+            req.params.id,
+            { ...req.body, ...updatedBody },
+            { new: true }
+        );
+
+        res.status(200).json(updatedDestination);
     } catch (error) {
-        return res.status(404).json(error);
+        console.error("Error al actualizar el destino:", error);
+        res.status(500).json({ message: error.message });
     }
 };
 
