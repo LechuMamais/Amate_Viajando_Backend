@@ -1,10 +1,34 @@
 const mongoose = require('mongoose');
 
 const toursSchema = new mongoose.Schema({
-    name: {type: String, required: true},
-    heading: {type: String, required: true},
-    description: {type: String, required: true},
-    longDescription: {type: String, required: true},
+    name: { type: String, required: true },
+    heading: { type: String, required: true },
+    description: { type: String, required: true },
+    longDescription: { type: String, required: true },
+    eng: {
+        name: { type: String, required: true },
+        heading: { type: String, required: true },
+        description: { type: String, required: true },
+        longDescription: { type: String, required: true }
+    },
+    esp: {
+        name: { type: String, required: true },
+        heading: { type: String, required: true },
+        description: { type: String, required: true },
+        longDescription: { type: String, required: true }
+    },
+    ita: {
+        name: { type: String, required: true },
+        heading: { type: String, required: true },
+        description: { type: String, required: true },
+        longDescription: { type: String, required: true }
+    },
+    por: {
+        name: { type: String, required: true },
+        heading: { type: String, required: true },
+        description: { type: String, required: true },
+        longDescription: { type: String, required: true }
+    },
     images: [
         {
             order: { type: Number, required: true },
