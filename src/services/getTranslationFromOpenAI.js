@@ -10,8 +10,10 @@ export const getTranslationFromOpenAI = async (language, text) => {
 
     const lang = language === 'eng' ? 'English' : language === 'ita' ? 'Italian' : language === 'por' ? 'Portuguese' : 'Unknown';
     try {
-        const message = `Return only the translation to the language ${lang}' of the text between ': '${text}'
-        No other information is needed, no quotes, nothing else.`;
+        const message = `Return only the translation to the language ${lang}' of the text between ''
+        '${text}'
+        No other information is needed. Don't include quotes. Don't include the language name.
+        Dont include the original text. Only the translation.`;
 
         const response = await openai.chat.completions.create({
             model: 'gpt-3.5-turbo',
