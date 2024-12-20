@@ -119,7 +119,10 @@ const updateDestination = async (req, res, next) => {
         const updatedDestination = await Destinations.findByIdAndUpdate(
             req.params.id,
             {
-                ...req.body, ...updatedBody, images: req.body.images.map(img => ({
+                ...updatedBody,
+                country_iso2code: req.body.country_iso2code,
+                country_name: req.body.country_name,
+                images: req.body.images.map(img => ({
                     order: img.order,
                     imgObj: img.imgObj
                 })),
