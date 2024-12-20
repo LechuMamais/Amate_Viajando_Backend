@@ -42,11 +42,13 @@ const getDestinationById = async (req, res, next) => {
     }
 };
 
+import { translateAllEmptyFields } from "./translateAllEmptyFields";
+
 const createDestination = async (req, res) => {
     try {
         const { eng, esp, ita, por, images, tours, country_name, country_iso2code } = req.body;
-        const languages = ["eng", "esp", "ita", "por"];
 
+        // Validar que haya al menos un campo completo en algún idioma
         const hasCompleteField = [eng, esp, ita, por].some(lang =>
             lang &&
             Object.values(lang).some(field => field && field.trim() !== "")
@@ -58,15 +60,10 @@ const createDestination = async (req, res) => {
             });
         }
 
+        // Completar campos faltantes en todos los idiomas
+        await translateAllEmptyFields(req.body);
 
-        for (const fromLang of languages) {
-            for (const toLang of languages) {
-                if (fromLang !== toLang) {
-                    await completeTranslations(fromLang, toLang);
-                }
-            }
-        }
-
+        // Validar referencias de imágenes
         const imageRefs = await Promise.all(
             images.map(async (img) => {
                 const imgDoc = await Images.findById(img.imgObj);
@@ -77,6 +74,7 @@ const createDestination = async (req, res) => {
             })
         );
 
+        // Validar referencias de tours
         const tourRefs = await Promise.all(
             tours.map(async (tour) => {
                 const tourDoc = await Tours.findById(tour.tourObj);
@@ -87,6 +85,7 @@ const createDestination = async (req, res) => {
             })
         );
 
+        // Crear el nuevo destino
         const newDestination = new Destinations({
             eng,
             esp,
@@ -108,8 +107,6 @@ const createDestination = async (req, res) => {
 };
 
 
-
-
 const updateDestination = async (req, res, next) => {
     try {
         const destination = await Destinations.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -118,7 +115,6 @@ const updateDestination = async (req, res, next) => {
         return res.status(404).json(error);
     }
 };
-
 
 const deleteImageFromDestination = async (req, res, next) => {
     const { destination_id, image_id } = req.params;
