@@ -118,8 +118,17 @@ const updateDestination = async (req, res, next) => {
 
         const updatedDestination = await Destinations.findByIdAndUpdate(
             req.params.id,
-            { ...req.body, ...updatedBody },
-            { new: true }
+            {
+                ...req.body, ...updatedBody, images: req.body.images.map(img => ({
+                    order: img.order,
+                    imgObj: img.imgObj
+                })),
+                tours: req.body.tours.map(tour => ({
+                    order: tour.order,
+                    imgObj: tour.tourObj
+                }))
+            },
+            { new: true },
         );
 
         res.status(200).json(updatedDestination);

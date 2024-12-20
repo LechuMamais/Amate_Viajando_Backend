@@ -1,3 +1,5 @@
+const { checkAllFieldsAreComplete } = require("../../utils/checkAllFieldsAreComplete");
+const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Tours = require("../models/tours");
 
 const getTours = async (req, res, next) => {
@@ -22,24 +24,69 @@ const getTourById = async (req, res, next) => {
 
 const createTour = async (req, res, next) => {
     try {
-        const tour = await Tours.create(req.body);
-        res.status(201).json(tour);
+        const { eng, esp, ita, por, images } = req.body;
+
+        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+
+        if (!hasCompleteField) {
+            return res.status(400).json({
+                message: "Debe existir al menos un campo completo en algún idioma."
+            });
+        }
+
+        await translateAllEmptyFields(req.body);
+
+        const imageRefs = await Promise.all(
+            images.map(async (img) => {
+                const imgDoc = await Images.findById(img.imgObj);
+                if (!imgDoc) {
+                    throw new Error(`Imagen con id ${img.imgObj} y orden ${img.order} no encontrada.`);
+                }
+                return { order: img.order, imgObj: imgDoc._id };
+            })
+        );
+
+        const newTour = new Tours({
+            eng,
+            esp,
+            ita,
+            por,
+            images: imageRefs,
+        });
+
+        await newTour.save();
+
+        res.status(201).json(newTour);
     } catch (error) {
-        return (res.status(404).json(error));
-    };
+        console.error("Error al crear el tour:", error);
+        res.status(400).json({ message: error.message });
+    }
 };
 
 const updateTour = async (req, res) => {
-    const { name, heading, description, longDescription, images } = req.body;
 
     try {
+        const tour = await Tours.findById(req.params.id);
+        if (!tour) {
+            return res.status(404).json({ message: "Tour no encontrado" });
+        };
+
+        const { eng, esp, ita, por } = req.body;
+
+        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+
+        if (!hasCompleteField) {
+            return res.status(400).json({
+                message: "Debe existir al menos un campo completo en algún idioma."
+            });
+        }
+
+        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por });
+
         const updatedTour = await Tours.findByIdAndUpdate(
             req.params.id,
             {
-                name,
-                heading,
-                description,
-                longDescription,
+                ...req.body, updatedBody,
                 images: images.map(img => ({
                     order: img.order,
                     imgObj: img.imgObj
@@ -48,10 +95,6 @@ const updateTour = async (req, res) => {
             { new: true }
         );
 
-        if (!updatedTour) {
-            return res.status(404).json({ message: "Tour no encontrado" });
-        }
-
         res.status(200).json(updatedTour);
     } catch (error) {
         res.status(500).json({ message: "Error al actualizar el tour", error });
@@ -59,7 +102,7 @@ const updateTour = async (req, res) => {
 };
 
 const deleteImageFromTour = async (req, res, next) => {
-    const {tour_id, image_id} = req.params;
+    const { tour_id, image_id } = req.params;
     try {
         const tour = await Tours.findById(tour_id);
         if (!tour) {
@@ -67,8 +110,8 @@ const deleteImageFromTour = async (req, res, next) => {
         }
 
         let newImagesArray = [];
-        tour.images.forEach(image=>{
-            if(image.imgObj != image_id){
+        tour.images.forEach(image => {
+            if (image.imgObj != image_id) {
                 newImagesArray.push(image)
             }
         })
@@ -76,9 +119,9 @@ const deleteImageFromTour = async (req, res, next) => {
         tour.images = [];
         tour.images = newImagesArray;
 
-        const updatedTour = await Tours.findByIdAndUpdate(tour_id, tour, {new: true})
+        const updatedTour = await Tours.findByIdAndUpdate(tour_id, tour, { new: true })
         res.status(200).json(updatedTour);
-    } catch(error){
+    } catch (error) {
         res.status(500).json({ message: "Error al actualizar el tour", error });
     }
 }
