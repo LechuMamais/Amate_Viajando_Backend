@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const { ISO2 } = require('../../resources/countriesISOCode');
 
 const destinationsSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    heading: { type: String, required: true },
-    description: { type: String, required: true },
-    longDescription: { type: String, required: true },
+    name: { type: String },
+    heading: { type: String },
+    description: { type: String },
+    longDescription: { type: String },
     eng: {
         name: { type: String, required: true },
         heading: { type: String, required: true },
