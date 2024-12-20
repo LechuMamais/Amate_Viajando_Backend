@@ -44,24 +44,44 @@ const getDestinationById = async (req, res, next) => {
 
 const createDestination = async (req, res) => {
     try {
-        const {
-            name,
-            heading,
-            description,
-            longDescription,
-            country_iso2code,
-            country_name,
-            images,
-            tours,
-        } = req.body;
+        const { eng, esp, ita, por, images, tours, country_name, country_iso2code } = req.body;
 
-        const baseLang = "esp";
+        // Idiomas disponibles
+        const languages = ["eng", "ita", "por", "esp"];
+        const translations = { eng, esp, ita, por };
 
-        if (!name || !heading || !description || !longDescription) {
-            return res.status(400).json({
-                message: "El nombre, heading, descripción y descripción larga son obligatorios.",
-            });
-        }
+        // Función para completar los campos vacíos en un idioma
+        const completeTranslations = async (targetLang, sourceLang) => {
+            for (const field of ["name", "heading", "description", "longDescription"]) {
+                if (!translations[targetLang][field]) {
+                    // Usar el valor del idioma base (sourceLang) como referencia
+                    const sourceValue = translations[sourceLang][field];
+                    if (sourceValue) {
+                        const translationResponse = await getTranslationFromOpenAI(targetLang, sourceValue);
+                        console.log(`Traduciendo '${field}' de '${sourceLang}' a '${targetLang}':`, translationResponse);
+
+                        if (translationResponse.role !== "assistant" || !translationResponse.content) {
+                            throw new Error(
+                                `Error al traducir '${field}' de '${sourceLang}' a '${targetLang}': ${translationResponse.refusal || "Error desconocido"
+                                }`
+                            );
+                        }
+
+                        // Asignar el resultado traducido al campo vacío
+                        translations[targetLang][field] = translationResponse.content.trim();
+                    }
+                }
+            }
+        };
+
+        // Completar los valores vacíos para cada idioma
+        // Priorizar valores de `esp`, luego `eng` como base de traducción
+        await completeTranslations("eng", "esp"); // Traducir inglés desde español
+        await completeTranslations("ita", "esp"); // Traducir italiano desde español
+        await completeTranslations("por", "esp"); // Traducir portugués desde español
+        await completeTranslations("ita", "eng"); // Si falta algo en italiano, usar inglés como referencia
+        await completeTranslations("por", "eng"); // Si falta algo en portugués, usar inglés como referencia
+
 
         const imageRefs = await Promise.all(
             images.map(async (img) => {
@@ -83,35 +103,9 @@ const createDestination = async (req, res) => {
             })
         );
 
-        // Traducir usando OpenAI
-        const translations = {};
-        const languages = ["eng", "ita", "por"];
-        const fieldsToTranslate = { name, heading, description, longDescription };
-
-        for (const lang of languages) {
-            translations[lang] = {};
-
-            for (const [field, value] of Object.entries(fieldsToTranslate)) {
-                const translationResponse = await getTranslationFromOpenAI(lang, value);
-                console.log(`Traduciendo '${field}' al idioma '${lang}':`, translationResponse);
-
-                if (translationResponse.role !== "assistant" || !translationResponse.content) {
-                    throw new Error(
-                        `Error al traducir '${field}' al idioma '${lang}': ${translationResponse.refusal || "Error desconocido"}`
-                    );
-                }
-
-                translations[lang][field] = translationResponse.content.trim();
-            }
-        }
-
-        // Crear un nuevo destino
+        // Crear un nuevo destino con las traducciones completadas
         const newDestination = new Destinations({
-            name,
-            heading,
-            description,
-            longDescription,
-            esp: { name, heading, description, longDescription },
+            esp: translations.esp,
             eng: translations.eng,
             ita: translations.ita,
             por: translations.por,
@@ -130,6 +124,7 @@ const createDestination = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 
 const updateDestination = async (req, res, next) => {
