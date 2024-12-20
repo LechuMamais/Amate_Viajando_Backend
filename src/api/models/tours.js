@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const toursSchema = new mongoose.Schema({
     name: { type: String },
     heading: { type: String },
-    description: { type: Stringe },
+    description: { type: String },
     longDescription: { type: String },
     eng: {
         name: { type: String, required: true },
