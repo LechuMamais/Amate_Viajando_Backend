@@ -1,4 +1,4 @@
-const { checkAllFieldsAreComplete } = require("../../utils/CheckAFieldIsComplete");
+const { checkAllFieldsAreComplete } = require("../../utils/checkAllFieldsAreComplete");
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Destinations = require("../models/destinations");
 const Images = require('../models/images');
