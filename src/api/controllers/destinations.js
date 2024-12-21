@@ -154,6 +154,7 @@ const updateDestination = async (req, res, next) => {
             });
         }
 
+        console.log('Traduciendo campos vacíos');
         const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por });
 
         const updatedDestination = await Destinations.findByIdAndUpdate(
