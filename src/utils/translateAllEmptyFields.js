@@ -4,6 +4,7 @@ const translateAllEmptyFields = async (body) => {
     for (const fromLang of languages) {
         for (const toLang of languages) {
             if (fromLang !== toLang) {
+                console.log(`Translating from ${fromLang} to ${toLang}`);
                 await completeTranslations(fromLang, toLang, body);
             }
         }
