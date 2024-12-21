@@ -1,4 +1,5 @@
-import { default as mongoose } from "mongoose";
+const { default: mongoose } = require("mongoose");
+
 
 const articlesSchema = new mongoose.Schema({
     title: { type: String, required: true },

@@ -1,12 +1,24 @@
-const { checkAllFieldsAreComplete } = require("../../utils/checkAllFieldsAreComplete");
+const checkAllFieldsAreComplete = require("../../utils/checkAllFieldsAreComplete");
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Tours = require("../models/tours");
 
 const getTours = async (req, res, next) => {
     try {
+
+        const { lang } = req.params;
+
+        if (!languages.includes(lang)) {
+            return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
+        }
         const tours = await Tours.find().populate('images.imgObj');
 
-        res.status(200).json(tours)
+        const result = tours.map(tour => ({
+            _id: tour._id,
+            images: tour.images,
+            ...tour[lang]
+        }));
+
+        res.status(200).json(result)
     } catch (error) {
         return (res.status(404).json(error));
     };
@@ -14,9 +26,27 @@ const getTours = async (req, res, next) => {
 
 const getTourById = async (req, res, next) => {
     try {
-        const tour = await Tours.findById(req.params.id).populate('images.imgObj');
+        const { id } = req.params;
+        const { lang } = req.params;
 
-        res.status(200).json(tour);
+        if (!languages.includes(lang)) {
+            return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
+        }
+
+        const tour = await Tours.findById(id)
+            .populate('images.imgObj');
+
+        if (!tour) {
+            return res.status(404).json({ message: "Tour no encontrado" });
+        }
+
+        const result = {
+            _id: tour._id,
+            images: tour.images,
+            ...tour[lang]
+        };
+
+        res.status(200).json(result);
     } catch (error) {
         return (res.status(404).json(error));
     };

@@ -1,9 +1,9 @@
-import { OpenAI } from "openai";
+const OpenAI = require('openai');
 
-const max_tokens = 3000
-const temperature = 0   // A tope de serio, 0 creativo
+const getTranslationFromOpenAI = async (language, text) => {
+    const max_tokens = 3000
+    const temperature = 0   // A tope de serio, 0 creativo
 
-export const getTranslationFromOpenAI = async (language, text) => {
     const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
     });
@@ -38,3 +38,5 @@ export const getTranslationFromOpenAI = async (language, text) => {
         };
     }
 };
+
+module.exports = getTranslationFromOpenAI 

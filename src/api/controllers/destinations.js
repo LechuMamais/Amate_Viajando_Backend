@@ -1,3 +1,4 @@
+const languages = require("../../resources/languages");
 const { checkAllFieldsAreComplete } = require("../../utils/checkAllFieldsAreComplete");
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Destinations = require("../models/destinations");
@@ -6,6 +7,17 @@ const Tours = require("../models/tours");
 
 const getDestinations = async (req, res, next) => {
     try {
+        const { lang } = req.params;
+        console.log(lang);
+        console.log('Languajes:', languages);
+
+        // Validar si el idioma recibido es válido
+        if (!languages.includes(lang)) {
+            console.log('Idioma no válido');
+            return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
+        }
+        console.log('Idioma válido');
+
         const destinations = await Destinations.find()
             .populate('images.imgObj')
             .populate({
@@ -15,33 +27,61 @@ const getDestinations = async (req, res, next) => {
                 }
             });
 
-        res.status(200).json(destinations);
+        // Mapear los destinos para devolver solo las propiedades del idioma solicitado
+        const result = destinations.map(destination => ({
+            _id: destination._id,
+            images: destination.images,
+            tours: destination.tours,
+            country_name: destination.country_name,
+            country_iso2code: destination.country_iso2code,
+            ...destination[lang] // Extraer las propiedades del idioma solicitado
+        }));
+
+        res.status(200).json(result);
     } catch (error) {
-        return res.status(404).json(error);
+        console.error("Error al obtener los destinos:", error);
+        res.status(500).json({ message: error.message });
     }
 };
 
 const getDestinationById = async (req, res, next) => {
     try {
-        const destination = await Destinations.findById(req.params.id)
+        const { id } = req.params;
+        const { lang } = req.params;
+
+        if (!languages.includes(lang)) {
+            return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
+        }
+
+        const destination = await Destinations.findById(id)
             .populate('images.imgObj')
             .populate({
                 path: 'tours.tourObj',
                 populate: {
                     path: 'images.imgObj'
                 }
-            })
+            });
 
         if (!destination) {
-            return res.status(404).json({ message: 'Destination not found' });
+            return res.status(404).json({ message: "Destino no encontrado" });
         }
 
-        res.status(200).json(destination);
+        const result = {
+            _id: destination._id,
+            images: destination.images,
+            tours: destination.tours,
+            country_name: destination.country_name,
+            country_iso2code: destination.country_iso2code,
+            ...destination[lang]
+        };
+
+        res.status(200).json(result);
     } catch (error) {
-        console.error(error);
-        return res.status(404).json({ message: error.message });
+        console.error("Error al obtener el destino:", error);
+        res.status(500).json({ message: error.message });
     }
 };
+
 
 const createDestination = async (req, res) => {
     try {
@@ -165,7 +205,6 @@ const deleteImageFromDestination = async (req, res, next) => {
         res.status(500).json({ message: "Error al actualizar el Destination", error });
     }
 }
-
 
 const deleteDestination = async (req, res, next) => {
     try {

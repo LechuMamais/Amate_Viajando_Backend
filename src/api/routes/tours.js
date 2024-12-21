@@ -4,8 +4,8 @@ const { createTour, getTourById, getTours, updateTour, deleteTour, deleteImageFr
 
 const toursRouter = require("express").Router();
 
-toursRouter.get("/:id", getTourById);
-toursRouter.get("/", getTours);
+toursRouter.get("/:id/:lang", getTourById);
+toursRouter.get("/:lang", getTours);
 toursRouter.post("/", isAuthAdmin, createTour);
 
 toursRouter.put("/:tour_id/deleteImage/:image_id", isAuthAdmin, deleteImageFromTour);

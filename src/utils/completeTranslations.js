@@ -1,6 +1,6 @@
-import { getTranslationFromOpenAI } from "../services/getTranslationFromOpenAI";
+const getTranslationFromOpenAI = require("../services/getTranslationFromOpenAI");
 
-export const completeTranslations = async (fromLang, toLang, body) => {
+const completeTranslations = async (fromLang, toLang, body) => {
     const fields = ["name", "heading", "description", "longDescription"];
     for (const field of fields) {
         if (!body[toLang][field] || body[toLang][field].trim() === "") {
@@ -19,3 +19,5 @@ export const completeTranslations = async (fromLang, toLang, body) => {
     }
     return body;
 };
+
+module.exports = { completeTranslations };

@@ -4,13 +4,13 @@ const { createDestination, getDestinationById, getDestinations, updateDestinatio
 
 const destinationsRouter = require("express").Router();
 
-destinationsRouter.get("/:id", getDestinationById);
-destinationsRouter.get("/", getDestinations);
-destinationsRouter.post("/",isAuthAdmin, createDestination);
+destinationsRouter.get("/:id/:lang", getDestinationById);
+destinationsRouter.get("/:lang", getDestinations);
+destinationsRouter.post("/", isAuthAdmin, createDestination);
 
 destinationsRouter.put("/:destination_id/deleteImage/:image_id", isAuthAdmin, deleteImageFromDestination);
 
-destinationsRouter.put("/:id",isAuthAdmin, updateDestination);
-destinationsRouter.delete("/:id",isAuthAdmin, deleteDestination);
+destinationsRouter.put("/:id", isAuthAdmin, updateDestination);
+destinationsRouter.delete("/:id", isAuthAdmin, deleteDestination);
 
 module.exports = destinationsRouter;

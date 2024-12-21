@@ -1,4 +1,4 @@
-export const ISO2 = [
+const ISO2 = [
     { code: 'AF', name: 'Afghanistan' },
     { code: 'AX', name: 'Aland Islands' },
     { code: 'AL', name: 'Albania' },
@@ -245,3 +245,5 @@ export const ISO2 = [
     { code: 'ZM', name: 'Zambia' },
     { code: 'ZW', name: 'Zimbabwe' }
 ];
+
+module.exports = ISO2;
