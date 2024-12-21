@@ -5,4 +5,4 @@ function checkAllFieldsAreComplete(eng, esp, ita, por) {
     );
     return hasCompleteField
 };
-export default checkAllFieldsAreComplete;
+module.exports = checkAllFieldsAreComplete;
