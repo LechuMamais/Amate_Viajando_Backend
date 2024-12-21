@@ -1,5 +1,5 @@
 const languages = require("../../resources/languages");
-const { checkAllFieldsAreComplete } = require("../../utils/checkAllFieldsAreComplete").default;
+import checkAllFieldsAreComplete from "../utils/checkAllFieldsAreComplete.js";
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Destinations = require("../models/destinations");
 const Images = require('../models/images');
