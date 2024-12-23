@@ -8,10 +8,9 @@ const Tours = require("../models/tours");
 const getDestinations = async (req, res, next) => {
     try {
         const { lang } = req.params;
-        console.log(lang);
-        console.log('Languajes:', languages);
+        console.log('idioma de la petición', lang);
+        console.log('Languajes available:', languages);
 
-        // Validar si el idioma recibido es válido
         if (!languages.includes(lang)) {
             console.log('Idioma no válido');
             return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
@@ -34,7 +33,15 @@ const getDestinations = async (req, res, next) => {
             tours: destination.tours,
             country_name: destination.country_name,
             country_iso2code: destination.country_iso2code,
-            ...destination[lang] // Extraer las propiedades del idioma solicitado
+            ...destination[lang], // Extraer las propiedades del idioma solicitado
+            tours: destination.tours.map(tour => ({
+                order: tour.order,
+                tourObj: {
+                    ...tour.tourObj?.[lang],
+                    images: tour.tourObj?.images,
+                    _id: tour.tourObj?._id
+                },
+            }))
         }));
 
         res.status(200).json(result);
@@ -95,7 +102,7 @@ const createDestination = async (req, res) => {
             });
         }
 
-        await translateAllEmptyFields(req.body);
+        await translateAllEmptyFields(req.body, fields = ["name", "heading", "description", "longDescription"]);
 
         const imageRefs = await Promise.all(
             images.map(async (img) => {
@@ -155,7 +162,7 @@ const updateDestination = async (req, res, next) => {
         }
 
         console.log('Traduciendo campos vacíos');
-        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por });
+        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["name", "heading", "description", "longDescription"]);
 
         const updatedDestination = await Destinations.findByIdAndUpdate(
             req.params.id,
@@ -169,7 +176,7 @@ const updateDestination = async (req, res, next) => {
                 })),
                 tours: req.body.tours.map(tour => ({
                     order: tour.order,
-                    imgObj: tour.tourObj
+                    tourObj: tour.tourObj
                 }))
             },
             { new: true },

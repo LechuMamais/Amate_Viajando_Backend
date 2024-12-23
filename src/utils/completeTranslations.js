@@ -1,7 +1,7 @@
 const getTranslationFromOpenAI = require("../services/getTranslationFromOpenAI");
 
-const completeTranslations = async (fromLang, toLang, body) => {
-    const fields = ["name", "heading", "description", "longDescription"];
+const completeTranslations = async (fromLang, toLang, body, fields) => {
+    //const fields = ["name", "heading", "description", "longDescription"];
     for (const field of fields) {
         if (!body[toLang][field] || body[toLang][field].trim() === "") {
             const sourceText = body[fromLang][field];

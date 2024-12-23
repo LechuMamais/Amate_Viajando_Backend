@@ -3,8 +3,8 @@ const { createArticle, getArticleById, getArticles, updateArticle, deleteArticle
 
 const articlesRouter = require("express").Router();
 
-articlesRouter.get("/:id", getArticleById);
-articlesRouter.get("/", getArticles);
+articlesRouter.get("/lang/:lang/id/:id", getArticleById);
+articlesRouter.get("/lang/:lang", getArticles);
 articlesRouter.post("/", isAuthAdmin, createArticle);
 
 articlesRouter.put("/:article_id/deleteImage/:image_id", isAuthAdmin, deleteImageFromArticle);

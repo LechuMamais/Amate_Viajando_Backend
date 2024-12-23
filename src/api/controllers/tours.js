@@ -64,7 +64,7 @@ const createTour = async (req, res, next) => {
             });
         }
 
-        await translateAllEmptyFields(req.body);
+        await translateAllEmptyFields(req.body, fields = ["name", "heading", "description", "longDescription"]);
 
         const imageRefs = await Promise.all(
             images.map(async (img) => {
@@ -104,6 +104,7 @@ const updateTour = async (req, res) => {
         const { eng, esp, ita, por } = req.body;
 
         const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+        console.log('hasCompleteField', hasCompleteField);
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -111,13 +112,23 @@ const updateTour = async (req, res) => {
             });
         }
 
-        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por });
+        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["name", "heading", "description", "longDescription"]);
+        console.log('116: updatedBody', updatedBody);
+
+        const updatedCompleteTour = {
+            ...updatedBody,
+            images: req.body.images.map(img => ({
+                order: img.order,
+                imgObj: img.imgObj
+            })),
+        };
+        console.log('125: updatedCompleteTour', updatedCompleteTour);
 
         const updatedTour = await Tours.findByIdAndUpdate(
             req.params.id,
             {
-                ...req.body, updatedBody,
-                images: images.map(img => ({
+                ...updatedBody,
+                images: req.body.images.map(img => ({
                     order: img.order,
                     imgObj: img.imgObj
                 })),

@@ -12,6 +12,7 @@ const getTranslationFromOpenAI = async (language, text) => {
     try {
         const message = `Return only the translation to the language ${lang}' of the text between ''
         '${text}'
+        if you find a \n leave it where it is.
         No other information is needed. Don't include quotes. Don't include the language name.
         Dont include the original text. Only the translation.`;
 
