@@ -14,7 +14,8 @@ const getTranslationFromOpenAI = async (language, text) => {
         '${text}'
         if you find a \n leave it where it is.
         No other information is needed. Don't include quotes. Don't include the language name.
-        Dont include the original text. Only the translation.`;
+        Dont include the original text. Only the translation.
+        In case the text is a html tag, translate text inside the tag and leave the tag as is.`;
 
         const response = await openai.chat.completions.create({
             model: 'gpt-3.5-turbo',
