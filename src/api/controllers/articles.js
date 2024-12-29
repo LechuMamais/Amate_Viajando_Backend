@@ -7,25 +7,16 @@ const Images = require('../models/images');
 const getArticles = async (req, res, next) => {
     try {
         const { lang } = req.params;
-        console.log('idioma de la petición', lang);
-        console.log('Languajes available:', languages);
-        console.log('PATO cuack')
 
         if (!languages.includes(lang)) {
-            console.log('Idioma no válido');
             return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
         }
-        console.log('Idioma válido perra');
 
         const articles = await Articles.find().populate('images.imgObj');
-        console.log('articles', articles);
 
-        // Transformamos los artículos
         const transformedArticles = articles.map(article => {
-            // Ordenamos las imágenes por el valor de `order`
             const sortedImages = article.images.sort((a, b) => a.order - b.order);
 
-            // Retornamos solo la imagen con el menor `order` o null si no hay imágenes, y los textos en el idioma solicitado
             return {
                 _id: article._id,
                 title: article[lang].title,
@@ -33,8 +24,6 @@ const getArticles = async (req, res, next) => {
                 images: sortedImages.length > 0 ? [sortedImages[0]] : [],
             };
         });
-
-        console.log('Articles returned OK')
 
         res.status(200).json(transformedArticles);
     } catch (error) {
@@ -82,9 +71,7 @@ const createArticle = async (req, res) => {
             });
         }
 
-        console.log('Traduciendo campos vacíos');
         await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["title", "subtitle", "content"]);
-
         const imageRefs = await Promise.all(images?.map(async (img) => {
             const imgDoc = await Images.findById(img.imgObj);
             if (!imgDoc) {
@@ -126,9 +113,7 @@ const updateArticle = async (req, res, next) => {
             });
         }
 
-        console.log('Traduciendo campos vacíos');
         const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["title", "subtitle", "content"]);
-        console.log('updatedBody', updatedBody);
 
         const updatedArticle = await Articles.findByIdAndUpdate(
             req.params.id,

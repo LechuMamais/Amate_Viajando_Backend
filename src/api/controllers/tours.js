@@ -104,7 +104,6 @@ const updateTour = async (req, res) => {
         const { eng, esp, ita, por } = req.body;
 
         const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
-        console.log('hasCompleteField', hasCompleteField);
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -113,7 +112,6 @@ const updateTour = async (req, res) => {
         }
 
         const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["name", "heading", "description", "longDescription"]);
-        console.log('116: updatedBody', updatedBody);
 
         const updatedCompleteTour = {
             ...updatedBody,
@@ -122,7 +120,6 @@ const updateTour = async (req, res) => {
                 imgObj: img.imgObj
             })),
         };
-        console.log('125: updatedCompleteTour', updatedCompleteTour);
 
         const updatedTour = await Tours.findByIdAndUpdate(
             req.params.id,

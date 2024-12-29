@@ -8,14 +8,10 @@ const Tours = require("../models/tours");
 const getDestinations = async (req, res, next) => {
     try {
         const { lang } = req.params;
-        console.log('idioma de la petición', lang);
-        console.log('Languajes available:', languages);
 
         if (!languages.includes(lang)) {
-            console.log('Idioma no válido');
             return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
         }
-        console.log('Idioma válido');
 
         const destinations = await Destinations.find()
             .populate('images.imgObj')
@@ -26,7 +22,6 @@ const getDestinations = async (req, res, next) => {
                 }
             });
 
-        // Mapear los destinos para devolver solo las propiedades del idioma solicitado
         const result = destinations.map(destination => ({
             _id: destination._id,
             images: destination.images,
@@ -161,7 +156,7 @@ const updateDestination = async (req, res, next) => {
             });
         }
 
-        console.log('Traduciendo campos vacíos');
+
         const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["name", "heading", "description", "longDescription"]);
 
         const updatedDestination = await Destinations.findByIdAndUpdate(
