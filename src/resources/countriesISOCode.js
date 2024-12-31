@@ -246,4 +246,4 @@ const ISO2 = [
     { code: 'ZW', name: 'Zimbabwe' }
 ];
 
-module.exports = ISO2;
+module.exports = { ISO2 };

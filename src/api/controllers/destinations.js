@@ -51,7 +51,7 @@ const getDestinationById = async (req, res, next) => {
         const { id } = req.params;
         const { lang } = req.params;
 
-        if (!languages.includes(lang)) {
+        if (!lang == 'all' && !languages.includes(lang)) {
             return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
         }
 
@@ -67,17 +67,20 @@ const getDestinationById = async (req, res, next) => {
         if (!destination) {
             return res.status(404).json({ message: "Destino no encontrado" });
         }
+        if (lang == 'all') {
+            res.status(200).json(destination)
+        } else {
+            const result = {
+                _id: destination._id,
+                images: destination.images,
+                tours: destination.tours,
+                country_name: destination.country_name,
+                country_iso2code: destination.country_iso2code,
+                ...destination[lang]
+            };
 
-        const result = {
-            _id: destination._id,
-            images: destination.images,
-            tours: destination.tours,
-            country_name: destination.country_name,
-            country_iso2code: destination.country_iso2code,
-            ...destination[lang]
-        };
-
-        res.status(200).json(result);
+            res.status(200).json(result);
+        }
     } catch (error) {
         console.error("Error al obtener el destino:", error);
         res.status(500).json({ message: error.message });
@@ -88,6 +91,9 @@ const getDestinationById = async (req, res, next) => {
 const createDestination = async (req, res) => {
     try {
         const { eng, esp, ita, por, images, tours, country_name, country_iso2code } = req.body;
+
+        console.log('Country name: ', country_name)
+        console.log('Country code: ', country_iso2code)
 
         const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
 

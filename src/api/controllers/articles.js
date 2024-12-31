@@ -36,7 +36,7 @@ const getArticleById = async (req, res, next) => {
     try {
         const { lang } = req.params;
 
-        if (!languages.includes(lang)) {
+        if (!lang == 'all' && !languages.includes(lang)) {
             return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
         }
         const article = await Articles.findById(req.params.id)
@@ -46,13 +46,15 @@ const getArticleById = async (req, res, next) => {
             return res.status(404).json({ message: 'Article not found' });
         }
 
-        const result = {
-            _id: article._id,
-            images: article.images,
-            ...article[lang]
-        };
-
-        res.status(200).json(result);
+        if (lang == 'all') {
+            res.status(200).json(article);
+        } else {
+            res.status(200).json({
+                _id: article._id,
+                images: article.images,
+                ...article[lang]
+            });
+        }
     } catch (error) {
         console.error(error);
         return res.status(404).json({ message: error.message });
@@ -166,6 +168,5 @@ const deleteArticle = async (req, res, next) => {
         return res.status(404).json(error);
     }
 };
-
 
 module.exports = { getArticles, getArticleById, createArticle, updateArticle, deleteImageFromArticle, deleteArticle };

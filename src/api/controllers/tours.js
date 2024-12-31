@@ -1,17 +1,17 @@
+const languages = require("../../resources/languages");
 const checkAllFieldsAreComplete = require("../../utils/checkAllFieldsAreComplete");
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Tours = require("../models/tours");
+const Images = require("../models/images");
 
 const getTours = async (req, res, next) => {
     try {
-
         const { lang } = req.params;
-
         if (!languages.includes(lang)) {
             return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
         }
-        const tours = await Tours.find().populate('images.imgObj');
 
+        const tours = await Tours.find().populate('images.imgObj');
         const result = tours.map(tour => ({
             _id: tour._id,
             images: tour.images,
@@ -26,27 +26,25 @@ const getTours = async (req, res, next) => {
 
 const getTourById = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const { lang } = req.params;
+        const { id, lang } = req.params;
 
-        if (!languages.includes(lang)) {
-            return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
+        if (!lang == 'all' && !languages.includes(lang)) {
+            return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: 'all' para obtener todos los idiomas, y: ${languages.join(", ")}` });
         }
 
-        const tour = await Tours.findById(id)
-            .populate('images.imgObj');
+        const tour = await Tours.findById(id).populate('images.imgObj');
 
-        if (!tour) {
-            return res.status(404).json({ message: "Tour no encontrado" });
+        if (!tour) { return res.status(404).json({ message: "Tour no encontrado" }); }
+
+        if (lang == 'all') {
+            res.status(200).json(tour);
+        } else {
+            res.status(200).json({
+                _id: tour._id,
+                images: tour.images,
+                ...tour[lang]
+            });
         }
-
-        const result = {
-            _id: tour._id,
-            images: tour.images,
-            ...tour[lang]
-        };
-
-        res.status(200).json(result);
     } catch (error) {
         return (res.status(404).json(error));
     };

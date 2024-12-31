@@ -1,10 +1,6 @@
 const { default: mongoose } = require("mongoose");
 
-
 const articlesSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    subtitle: { type: String },
-    content: { type: String, required: true },
     eng: {
         title: { type: String, required: true },
         subtitle: { type: String },
