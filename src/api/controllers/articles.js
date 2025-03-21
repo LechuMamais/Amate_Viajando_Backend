@@ -9,6 +9,10 @@ const getArticles = async (req, res) => {
         const { lang } = req.params;
 
         if (!languages.includes(lang)) {
+            if (lang === 'all') {
+                const articles = await Articles.find();
+                return res.status(200).json(articles);
+            }
             return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
         }
 

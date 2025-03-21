@@ -8,6 +8,10 @@ const getTours = async (req, res, next) => {
     try {
         const { lang } = req.params;
         if (!languages.includes(lang)) {
+            if (lang === 'all') {
+                const tours = await Tours.find();
+                return res.status(200).json(tours);
+            }
             return res.status(400).json({ message: `Idioma no válido. Los idiomas permitidos son: ${languages.join(", ")}` });
         }
 
