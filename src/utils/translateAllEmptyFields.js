@@ -1,4 +1,4 @@
-const languages = require("../resources/languages");
+const { languages } = require("../resources/languages");
 const completeTranslations = require("./completeTranslations").completeTranslations;
 
 const translateAllEmptyFields = async (body, fields) => {
@@ -14,4 +14,5 @@ const translateAllEmptyFields = async (body, fields) => {
     console.log("All empty fields translated");
     return body;
 };
+
 module.exports = { translateAllEmptyFields };

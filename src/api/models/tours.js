@@ -1,34 +1,21 @@
 const mongoose = require('mongoose');
+const { languages } = require("../../resources/languages");
+
+
+const languageFields = {
+    name: { type: String, required: true },
+    heading: { type: String, required: true },
+    description: { type: String, required: true },
+    longDescription: { type: String, required: true }
+};
+
+const languageSchema = languages.reduce((acc, lang) => {
+    acc[lang] = languageFields;
+    return acc;
+}, {});
 
 const toursSchema = new mongoose.Schema({
-    name: { type: String },
-    heading: { type: String },
-    description: { type: String },
-    longDescription: { type: String },
-    eng: {
-        name: { type: String, required: true },
-        heading: { type: String, required: true },
-        description: { type: String, required: true },
-        longDescription: { type: String, required: true }
-    },
-    esp: {
-        name: { type: String, required: true },
-        heading: { type: String, required: true },
-        description: { type: String, required: true },
-        longDescription: { type: String, required: true }
-    },
-    ita: {
-        name: { type: String, required: true },
-        heading: { type: String, required: true },
-        description: { type: String, required: true },
-        longDescription: { type: String, required: true }
-    },
-    por: {
-        name: { type: String, required: true },
-        heading: { type: String, required: true },
-        description: { type: String, required: true },
-        longDescription: { type: String, required: true }
-    },
+    ...languageSchema,
     images: [
         {
             order: { type: Number, required: true },

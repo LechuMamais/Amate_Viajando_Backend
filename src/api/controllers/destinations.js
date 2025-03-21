@@ -1,4 +1,4 @@
-const languages = require("../../resources/languages");
+const { languages } = require("../../resources/languages");
 const checkAllFieldsAreComplete = require("../../utils/checkAllFieldsAreComplete");
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Destinations = require("../models/destinations");
@@ -87,15 +87,19 @@ const getDestinationById = async (req, res, next) => {
     }
 };
 
-
 const createDestination = async (req, res) => {
     try {
-        const { eng, esp, ita, por, images, tours, country_name, country_iso2code } = req.body;
+        const { images, tours, country_name, country_iso2code } = req.body;
 
-        console.log('Country name: ', country_name)
-        console.log('Country code: ', country_iso2code)
+        const destinationData = {};
+        languages.forEach(lang => {
+            destinationData[lang] = req.body[lang] || {};
+        });
 
-        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+        console.log('Country name: ', country_name);
+        console.log('Country code: ', country_iso2code);
+
+        const hasCompleteField = checkAllFieldsAreComplete(...Object.values(destinationData));
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -103,10 +107,10 @@ const createDestination = async (req, res) => {
             });
         }
 
-        await translateAllEmptyFields(req.body, fields = ["name", "heading", "description", "longDescription"]);
+        await translateAllEmptyFields(destinationData, ["name", "heading", "description", "longDescription"]);
 
         const imageRefs = await Promise.all(
-            images.map(async (img) => {
+            (images || []).map(async (img) => {
                 const imgDoc = await Images.findById(img.imgObj);
                 if (!imgDoc) {
                     throw new Error(`Imagen con id ${img.imgObj} y orden ${img.order} no encontrada.`);
@@ -116,7 +120,7 @@ const createDestination = async (req, res) => {
         );
 
         const tourRefs = await Promise.all(
-            tours.map(async (tour) => {
+            (tours || []).map(async (tour) => {
                 const tourDoc = await Tours.findById(tour.tourObj);
                 if (!tourDoc) {
                     throw new Error(`Tour con id ${tour.tourObj} y orden ${tour.order} no encontrado.`);
@@ -126,10 +130,7 @@ const createDestination = async (req, res) => {
         );
 
         const newDestination = new Destinations({
-            eng,
-            esp,
-            ita,
-            por,
+            ...destinationData,
             country_name,
             country_iso2code,
             images: imageRefs,
@@ -145,16 +146,21 @@ const createDestination = async (req, res) => {
     }
 };
 
-const updateDestination = async (req, res, next) => {
+const updateDestination = async (req, res) => {
     try {
         const destination = await Destinations.findById(req.params.id);
         if (!destination) {
             return res.status(404).json({ message: "Destino no encontrado." });
         }
 
-        const { eng, esp, ita, por } = req.body;
+        const { country_name, country_iso2code, images, tours } = req.body;
 
-        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+        const destinationData = {};
+        languages.forEach(lang => {
+            destinationData[lang] = req.body[lang] || {};
+        });
+
+        const hasCompleteField = checkAllFieldsAreComplete(...Object.values(destinationData));
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -162,25 +168,24 @@ const updateDestination = async (req, res, next) => {
             });
         }
 
-
-        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["name", "heading", "description", "longDescription"]);
+        const updatedBody = await translateAllEmptyFields(destinationData, ["name", "heading", "description", "longDescription"]);
 
         const updatedDestination = await Destinations.findByIdAndUpdate(
             req.params.id,
             {
                 ...updatedBody,
-                country_iso2code: req.body.country_iso2code,
-                country_name: req.body.country_name,
-                images: req.body.images.map(img => ({
+                country_iso2code,
+                country_name,
+                images: (images || []).map(img => ({
                     order: img.order,
                     imgObj: img.imgObj
                 })),
-                tours: req.body.tours.map(tour => ({
+                tours: (tours || []).map(tour => ({
                     order: tour.order,
                     tourObj: tour.tourObj
                 }))
             },
-            { new: true },
+            { new: true }
         );
 
         res.status(200).json(updatedDestination);

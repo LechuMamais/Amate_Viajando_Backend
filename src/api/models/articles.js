@@ -1,26 +1,19 @@
 const { default: mongoose } = require("mongoose");
+const { languages } = require("../../resources/languages");
+
+const languageFields = {
+    title: { type: String, required: true },
+    subtitle: { type: String },
+    content: { type: String, required: true },
+};
+
+const languageSchema = languages.reduce((acc, lang) => {
+    acc[lang] = languageFields;
+    return acc;
+}, {});
 
 const articlesSchema = new mongoose.Schema({
-    eng: {
-        title: { type: String, required: true },
-        subtitle: { type: String },
-        content: { type: String, required: true },
-    },
-    esp: {
-        title: { type: String, required: true },
-        subtitle: { type: String },
-        content: { type: String, required: true },
-    },
-    ita: {
-        title: { type: String, required: true },
-        subtitle: { type: String },
-        content: { type: String, required: true },
-    },
-    por: {
-        title: { type: String, required: true },
-        subtitle: { type: String },
-        content: { type: String, required: true },
-    },
+    ...languageSchema,
     images: [
         {
             order: { type: Number, required: true },

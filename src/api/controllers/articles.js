@@ -1,10 +1,10 @@
-const languages = require("../../resources/languages");
+const { languages } = require("../../resources/languages");
 const checkAllFieldsAreComplete = require("../../utils/checkAllFieldsAreComplete");
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Articles = require("../models/articles");
 const Images = require('../models/images');
 
-const getArticles = async (req, res, next) => {
+const getArticles = async (req, res) => {
     try {
         const { lang } = req.params;
 
@@ -32,7 +32,7 @@ const getArticles = async (req, res, next) => {
     }
 };
 
-const getArticleById = async (req, res, next) => {
+const getArticleById = async (req, res) => {
     try {
         const { lang } = req.params;
 
@@ -63,9 +63,16 @@ const getArticleById = async (req, res, next) => {
 
 const createArticle = async (req, res) => {
     try {
-        const { eng, esp, ita, por, images } = req.body;
+        // Obtener dinámicamente los idiomas desde req.body
+        const articleData = {};
+        languages.forEach(lang => {
+            articleData[lang] = req.body[lang] || {};
+        });
 
-        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+        // Validar que al menos un idioma tenga campos completos
+        const hasCompleteField = checkAllFieldsAreComplete(
+            ...Object.values(articleData)
+        );
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -73,20 +80,21 @@ const createArticle = async (req, res) => {
             });
         }
 
-        await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["title", "subtitle", "content"]);
-        const imageRefs = await Promise.all(images?.map(async (img) => {
+        // Traducir los campos vacíos
+        await translateAllEmptyFields(articleData, ["title", "subtitle", "content"]);
+
+        // Validar imágenes
+        const imageRefs = await Promise.all(req.body.images?.map(async (img) => {
             const imgDoc = await Images.findById(img.imgObj);
             if (!imgDoc) {
-                throw new Error(`Image with id ${img.imgObj} and order ${img.order} not found`);
+                throw new Error(`Imagen con ID ${img.imgObj} y orden ${img.order} no encontrada`);
             }
             return { order: img.order, imgObj: imgDoc._id };
-        }));
+        }) || []);
 
+        // Crear el artículo
         const newArticle = new Articles({
-            eng,
-            esp,
-            ita,
-            por,
+            ...articleData,
             images: imageRefs,
         });
 
@@ -98,16 +106,19 @@ const createArticle = async (req, res) => {
     }
 };
 
-const updateArticle = async (req, res, next) => {
+const updateArticle = async (req, res) => {
     try {
         const article = await Articles.findById(req.params.id);
         if (!article) {
-            return res.status(404).json({ message: "Destino no encontrado." });
+            return res.status(404).json({ message: "Artículo no encontrado." });
         }
 
-        const { eng, esp, ita, por } = req.body;
+        const articleData = {};
+        languages.forEach(lang => {
+            articleData[lang] = req.body[lang] || {};
+        });
 
-        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+        const hasCompleteField = checkAllFieldsAreComplete(...Object.values(articleData));
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -115,7 +126,7 @@ const updateArticle = async (req, res, next) => {
             });
         }
 
-        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["title", "subtitle", "content"]);
+        const updatedBody = await translateAllEmptyFields(articleData, ["title", "subtitle", "content"]);
 
         const updatedArticle = await Articles.findByIdAndUpdate(
             req.params.id,
@@ -135,7 +146,7 @@ const updateArticle = async (req, res, next) => {
     }
 };
 
-const deleteImageFromArticle = async (req, res, next) => {
+const deleteImageFromArticle = async (req, res) => {
     const { article_id, image_id } = req.params;
     try {
         const article = await Articles.findById(article_id);
@@ -160,7 +171,7 @@ const deleteImageFromArticle = async (req, res, next) => {
     }
 }
 
-const deleteArticle = async (req, res, next) => {
+const deleteArticle = async (req, res) => {
     try {
         const article = await Articles.findByIdAndDelete(req.params.id);
         res.status(200).json(article);

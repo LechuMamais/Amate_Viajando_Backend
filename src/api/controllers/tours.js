@@ -1,4 +1,4 @@
-const languages = require("../../resources/languages");
+const { languages } = require("../../resources/languages");
 const checkAllFieldsAreComplete = require("../../utils/checkAllFieldsAreComplete");
 const { translateAllEmptyFields } = require("../../utils/translateAllEmptyFields");
 const Tours = require("../models/tours");
@@ -50,11 +50,14 @@ const getTourById = async (req, res, next) => {
     };
 };
 
-const createTour = async (req, res, next) => {
+const createTour = async (req, res) => {
     try {
-        const { eng, esp, ita, por, images } = req.body;
+        const tourData = {};
+        languages.forEach(lang => {
+            tourData[lang] = req.body[lang] || {};
+        });
 
-        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+        const hasCompleteField = checkAllFieldsAreComplete(...Object.values(tourData));
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -62,10 +65,10 @@ const createTour = async (req, res, next) => {
             });
         }
 
-        await translateAllEmptyFields(req.body, fields = ["name", "heading", "description", "longDescription"]);
+        await translateAllEmptyFields(tourData, ["name", "heading", "description", "longDescription"]);
 
         const imageRefs = await Promise.all(
-            images.map(async (img) => {
+            (req.body.images || []).map(async (img) => {
                 const imgDoc = await Images.findById(img.imgObj);
                 if (!imgDoc) {
                     throw new Error(`Imagen con id ${img.imgObj} y orden ${img.order} no encontrada.`);
@@ -75,10 +78,7 @@ const createTour = async (req, res, next) => {
         );
 
         const newTour = new Tours({
-            eng,
-            esp,
-            ita,
-            por,
+            ...tourData,
             images: imageRefs,
         });
 
@@ -92,16 +92,18 @@ const createTour = async (req, res, next) => {
 };
 
 const updateTour = async (req, res) => {
-
     try {
         const tour = await Tours.findById(req.params.id);
         if (!tour) {
             return res.status(404).json({ message: "Tour no encontrado" });
-        };
+        }
 
-        const { eng, esp, ita, por } = req.body;
+        const tourData = {};
+        languages.forEach(lang => {
+            tourData[lang] = req.body[lang] || {};
+        });
 
-        const hasCompleteField = checkAllFieldsAreComplete(eng, esp, ita, por);
+        const hasCompleteField = checkAllFieldsAreComplete(...Object.values(tourData));
 
         if (!hasCompleteField) {
             return res.status(400).json({
@@ -109,21 +111,13 @@ const updateTour = async (req, res) => {
             });
         }
 
-        const updatedBody = await translateAllEmptyFields({ eng, esp, ita, por }, fields = ["name", "heading", "description", "longDescription"]);
-
-        const updatedCompleteTour = {
-            ...updatedBody,
-            images: req.body.images.map(img => ({
-                order: img.order,
-                imgObj: img.imgObj
-            })),
-        };
+        const updatedBody = await translateAllEmptyFields(tourData, ["name", "heading", "description", "longDescription"]);
 
         const updatedTour = await Tours.findByIdAndUpdate(
             req.params.id,
             {
                 ...updatedBody,
-                images: req.body.images.map(img => ({
+                images: (req.body.images || []).map(img => ({
                     order: img.order,
                     imgObj: img.imgObj
                 })),
@@ -136,7 +130,6 @@ const updateTour = async (req, res) => {
         res.status(500).json({ message: "Error al actualizar el tour", error });
     }
 };
-
 const deleteImageFromTour = async (req, res, next) => {
     const { tour_id, image_id } = req.params;
     try {

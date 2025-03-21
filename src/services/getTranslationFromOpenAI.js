@@ -1,4 +1,5 @@
 const OpenAI = require('openai');
+const { getLanguageName } = require('../resources/languages');
 
 const getTranslationFromOpenAI = async (language, text) => {
     const max_tokens = 3000
@@ -8,7 +9,8 @@ const getTranslationFromOpenAI = async (language, text) => {
         apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const lang = language === 'eng' ? 'English' : language === 'ita' ? 'Italian' : language === 'por' ? 'Portuguese' : 'Unknown';
+    const lang = getLanguageName(language)
+
     try {
         const message = `Return only the translation to the language ${lang}' of the text between ''
         '${text}'
